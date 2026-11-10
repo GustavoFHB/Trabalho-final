@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Simulador de Máquina de Turing</title>
+<style>
+  :root {
+    --bg: #f4f5f7;
+    --card: #ffffff;
+    --text: #1d2330;
+    --muted: #5d6576;
+    --border: #d9dde5;
+    --primary: #2f5bd3;
+    --primary-hover: #2449ad;
+    --ok: #1d7a46;
+    --ok-bg: #e3f4ea;
+    --err: #b42318;
+    --err-bg: #fdecea;
+    --cell: #fbfbfd;
+    --head: #f2b632;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+  header {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 24px 16px 0;
+  }
+  header h1 { margin: 0; font-size: 1.5rem; }
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 20px 16px 48px;
+    display: grid;
+    gap: 18px;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 20px;
+  }
+  .card h2 { margin: 0 0 14px; font-size: 1.05rem; }
+  .linha {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 12px;
+  }
+  label { display: block; font-size: .82rem; color: var(--muted); margin-bottom: 4px; }
+  input, select {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font: inherit;
+    background: #fff;
+  }
+  input:focus, select:focus { outline: 2px solid var(--primary); outline-offset: -1px; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { padding: 6px 6px; text-align: left; border-bottom: 1px solid var(--border); }
+  th { font-size: .8rem; color: var(--muted); font-weight: 600; }
+  td input, td select { padding: 6px 8px; }
+  td.idx { color: var(--muted); width: 32px; font-size: .85rem; }
+  .barra { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; align-items: center; }
+  button {
+    font: inherit;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: #fff;
+    padding: 8px 14px;
+    cursor: pointer;
+  }
+  button:hover { background: #eef1f6; }
+  button.primario { background: var(--primary); border-color: var(--primary); color: #fff; font-weight: 600; }
+  button.primario:hover { background: var(--primary-hover); }
+  button.remover { color: var(--err); border-color: transparent; background: transparent; padding: 6px 10px; }
+  button.remover:hover { background: var(--err-bg); }
+  button:disabled { opacity: .5; cursor: default; }
+  .espaco { flex: 1; }
+  .resultado {
+    border-radius: 8px;
+    padding: 14px 16px;
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+  .resultado.ok { background: var(--ok-bg); color: var(--ok); }
+  .resultado.erro { background: var(--err-bg); color: var(--err); }
+  .resultado small { display: block; font-weight: 400; margin-top: 4px; color: var(--text); }
+  .fita-wrap { overflow-x: auto; padding: 30px 0 6px; }
+  .fita { display: flex; gap: 0; width: max-content; }
+  .celula {
+    position: relative;
+    width: 42px; height: 46px;
+    display: flex; align-items: center; justify-content: center;
+    border: 1px solid var(--border);
+    margin-left: -1px;
+    background: var(--cell);
+    font: 600 1.1rem ui-monospace, Consolas, monospace;
+  }
+  .celula.branco { color: #a0a6b3; }
+  .celula.atual { background: #fff6dd; border-color: var(--head); z-index: 1; box-shadow: 0 0 0 2px var(--head); }
+  .celula.atual::before {
+    content: "▼";
+    position: absolute;
+    top: -24px;
+    color: var(--head);
+    font-size: .9rem;
+  }
+  .info-passo {
+    display: flex; flex-wrap: wrap; gap: 18px;
+    font-size: .92rem; margin: 10px 0 4px;
+  }
+  .info-passo b { font-family: ui-monospace, Consolas, monospace; }
+  input[type=range] { padding: 0; }
+  .lista-passos { max-height: 320px; overflow-y: auto; margin-top: 16px; }
+  .lista-passos td { font-family: ui-monospace, Consolas, monospace; font-size: .88rem; }
+  .lista-passos tr { cursor: pointer; }
+  .lista-passos tr.sel td { background: #fff6dd; }
+  .oculto { display: none; }
+  @media (max-width: 720px) {
+    .linha { grid-template-columns: 1fr 1fr; }
+    .linha > :first-child { grid-column: 1 / -1; }
+    .tabela-transicoes { overflow-x: auto; }
+    .tabela-transicoes table { min-width: 620px; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>Simulador de Máquina de Turing</h1>
+</header>
+
+<main>
+  <section class="card">
+    <h2>Entrada</h2>
+    <div class="linha">
+      <div>
+        <label for="entrada">Cadeia de entrada</label>
+        <input id="entrada" placeholder="ex.: 000100" autocomplete="off">
+      </div>
+      <div>
+        <label for="estadoInicial">Estado inicial</label>
+        <input id="estadoInicial" placeholder="ex.: q0">
+      </div>
+      <div>
+        <label for="estadoFinal">Estado final (aceitação)</label>
+        <input id="estadoFinal" placeholder="ex.: q3">
+      </div>
+      <div>
+        <label for="limitePassos">Limite de passos</label>
+        <input id="limitePassos" type="number" min="1" max="10000" value="1000">
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Transições</h2>
+    <div class="tabela-transicoes">
+      <table>
+        <thead>
+          <tr>
+            <th></th>
+            <th>Estado atual</th>
+            <th>Símbolo lido</th>
+            <th>Novo estado</th>
+            <th>Símbolo escrito</th>
+            <th>Direção</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="transicoes"></tbody>
+      </table>
+    </div>
+    <div class="barra">
+      <button type="button" id="btnAdicionar">+ Adicionar transição</button>
+      <button type="button" id="btnLimpar">Limpar</button>
+    </div>
+    <div class="barra">
+      <button type="button" class="primario" id="btnSimular">Simular</button>
+    </div>
+  </section>
+
+  <section class="card oculto" id="painelResultado">
+    <h2>Resultado</h2>
+    <div id="resultado" class="resultado"></div>
+
+    <div id="painelFita">
+      <div class="fita-wrap"><div class="fita" id="fita"></div></div>
+      <div class="info-passo" id="infoPasso"></div>
+      <div class="barra">
+        <button type="button" id="btnInicio" title="Início">⏮</button>
+        <button type="button" id="btnAnterior" title="Passo anterior">◀</button>
+        <button type="button" id="btnPlay">▶ Executar</button>
+        <button type="button" id="btnProximo" title="Próximo passo">▶</button>
+        <button type="button" id="btnFim" title="Fim">⏭</button>
+        <input type="range" id="slider" min="0" value="0" style="flex:1; min-width:160px">
+      </div>
+      <div class="lista-passos">
+        <table>
+          <thead>
+            <tr><th>Passo</th><th>Estado</th><th>Lido</th><th>Fita</th><th>Transição aplicada</th></tr>
+          </thead>
+          <tbody id="passos"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+const corpoTransicoes = $("transicoes");
+let frames = [];
+let atual = 0;
+let timer = null;
+
+function escapar(s) {
+  return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+function adicionarLinha(t = ["", "", "", "", "R"]) {
+  const tr = document.createElement("tr");
+  tr.innerHTML = `
+    <td class="idx"></td>
+    <td><input data-campo="estadoAtual" placeholder="q0"></td>
+    <td><input data-campo="simboloLido" maxlength="1" placeholder="0"></td>
+    <td><input data-campo="novoEstado" placeholder="q1"></td>
+    <td><input data-campo="simboloEscrito" maxlength="1" placeholder="1"></td>
+    <td>
+      <select data-campo="direcao">
+        <option value="R">R — direita</option>
+        <option value="L">L — esquerda</option>
+        <option value="S">S — parado</option>
+      </select>
+    </td>
+    <td><button type="button" class="remover" title="Remover">✕</button></td>`;
+  const campos = tr.querySelectorAll("[data-campo]");
+  t.forEach((v, i) => { campos[i].value = v; });
+  tr.querySelector(".remover").onclick = () => { tr.remove(); numerar(); };
+  corpoTransicoes.appendChild(tr);
+  numerar();
+}
+
+function numerar() {
+  [...corpoTransicoes.rows].forEach((tr, i) => { tr.cells[0].textContent = i + 1; });
+}
+
+function lerTransicoes() {
+  return [...corpoTransicoes.rows].map(tr => {
+    const t = {};
+    tr.querySelectorAll("[data-campo]").forEach(el => { t[el.dataset.campo] = el.value.trim(); });
+    return t;
+  });
+}
+
+async function simular() {
+  pararAnimacao();
+  const corpo = {
+    entrada: $("entrada").value,
+    estadoInicial: $("estadoInicial").value,
+    estadoFinal: $("estadoFinal").value,
+    limitePassos: Number($("limitePassos").value) || null,
+    transicoes: lerTransicoes()
+  };
+
+  $("btnSimular").disabled = true;
+  try {
+    const resp = await fetch("/api/simular", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(corpo)
+    });
+    const dados = await resp.json().catch(() => ({}));
+    if (!resp.ok) {
+      mostrarErro(dados.erro || `Erro ${resp.status} ao simular.`);
+      return;
+    }
+    mostrarResultado(dados);
+  } catch (e) {
+    mostrarErro("Não foi possível conectar ao servidor. Verifique se a aplicação Spring Boot está rodando.");
+  } finally {
+    $("btnSimular").disabled = false;
+  }
+}
+
+function mostrarErro(msg) {
+  $("painelResultado").classList.remove("oculto");
+  $("painelFita").classList.add("oculto");
+  const r = $("resultado");
+  r.className = "resultado erro";
+  r.innerHTML = `Erro na configuração<small>${escapar(msg)}</small>`;
+}
+
+function mostrarResultado(d) {
+  $("painelResultado").classList.remove("oculto");
+  $("painelFita").classList.remove("oculto");
+
+  const r = $("resultado");
+  r.className = "resultado " + (d.aceita ? "ok" : "erro");
+  r.innerHTML = `${d.aceita ? "✔ Cadeia ACEITA" : "✘ Cadeia REJEITADA"}
+    <small>${escapar(d.motivo || "")} — ${d.passos.length} passo(s). Fita final: <b>${escapar(d.fitaFinal)}</b></small>`;
+
+  frames = d.passos.map(p => ({
+    rotulo: `Passo ${p.numero}`,
+    estado: p.estado,
+    fita: p.fita,
+    cabecote: p.cabecote,
+    lido: p.simboloLido,
+    transicao: p.transicao
+  }));
+  frames.push({
+    rotulo: "Final",
+    estado: d.estadoFinal,
+    fita: d.fitaFinal,
+    cabecote: d.cabecoteFinal,
+    lido: d.fitaFinal[d.cabecoteFinal] ?? "B",
+    transicao: null
+  });
+
+  $("passos").innerHTML = frames.map((f, i) => `
+    <tr data-i="${i}">
+      <td>${escapar(f.rotulo)}</td>
+      <td>${escapar(f.estado)}</td>
+      <td>${escapar(f.lido)}</td>
+      <td>${escapar(f.fita)}</td>
+      <td>${f.transicao ? escapar(descrever(f.transicao)) : (d.aceita ? "aceita" : "parou")}</td>
+    </tr>`).join("");
+  [...$("passos").rows].forEach(tr => { tr.onclick = () => irPara(Number(tr.dataset.i)); });
+
+  $("slider").max = frames.length - 1;
+  irPara(0);
+  $("painelResultado").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function descrever(t) {
+  return `δ(${t.estadoAtual}, ${t.simboloLido}) = (${t.novoEstado}, ${t.simboloEscrito}, ${t.movimento})`;
+}
+
+function irPara(i) {
+  atual = Math.max(0, Math.min(i, frames.length - 1));
+  const f = frames[atual];
+
+  $("fita").innerHTML = [...f.fita].map((c, idx) =>
+    `<div class="celula${c === "B" ? " branco" : ""}${idx === f.cabecote ? " atual" : ""}">${escapar(c)}</div>`
+  ).join("");
+  const celAtual = $("fita").querySelector(".atual");
+  if (celAtual) celAtual.scrollIntoView({ block: "nearest", inline: "center" });
+
+  $("infoPasso").innerHTML = `
+    <span>${escapar(f.rotulo)} de ${frames.length - 1}</span>
+    <span>Estado: <b>${escapar(f.estado)}</b></span>
+    <span>Símbolo lido: <b>${escapar(f.lido)}</b></span>
+    <span>Cabeçote: <b>${f.cabecote}</b></span>
+    ${f.transicao ? `<span>Aplicando: <b>${escapar(descrever(f.transicao))}</b></span>` : ""}`;
+
+  $("slider").value = atual;
+  [...$("passos").rows].forEach((tr, idx) => tr.classList.toggle("sel", idx === atual));
+  const sel = $("passos").rows[atual];
+  if (sel) sel.scrollIntoView({ block: "nearest" });
+}
+
+function alternarAnimacao() {
+  if (timer) { pararAnimacao(); return; }
+  if (atual >= frames.length - 1) irPara(0);
+  $("btnPlay").textContent = "⏸ Pausar";
+  timer = setInterval(() => {
+    if (atual >= frames.length - 1) { pararAnimacao(); return; }
+    irPara(atual + 1);
+  }, 600);
+}
+
+function pararAnimacao() {
+  clearInterval(timer);
+  timer = null;
+  $("btnPlay").textContent = "▶ Executar";
+}
+
+$("btnAdicionar").onclick = () => adicionarLinha();
+$("btnLimpar").onclick = () => { corpoTransicoes.innerHTML = ""; };
+$("btnSimular").onclick = simular;
+$("btnInicio").onclick = () => { pararAnimacao(); irPara(0); };
+$("btnAnterior").onclick = () => { pararAnimacao(); irPara(atual - 1); };
+$("btnProximo").onclick = () => { pararAnimacao(); irPara(atual + 1); };
+$("btnFim").onclick = () => { pararAnimacao(); irPara(frames.length - 1); };
+$("btnPlay").onclick = alternarAnimacao;
+$("slider").oninput = e => { pararAnimacao(); irPara(Number(e.target.value)); };
+$("entrada").addEventListener("keydown", e => { if (e.key === "Enter") simular(); });
+</script>
+</body>
+</html>
