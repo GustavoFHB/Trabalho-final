@@ -1,0 +1,7 @@
+{
+  "producoes": "S -> aSb | λ",
+  "variaveis": "S",
+  "terminais": "a, b",
+  "simboloInicial": "S",
+  "cadeia": "aaabbb"
+}

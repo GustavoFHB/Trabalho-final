@@ -1,0 +1,13 @@
+{
+  "entrada": "000100",
+  "estadoInicial": "q0",
+  "estadosFinais": "qf",
+  "limitePassos": 1000,
+  "transicoes": [
+    { "estadoAtual": "q0", "simboloLido": "0", "novoEstado": "q0", "simboloEscrito": "0", "direcao": "R" },
+    { "estadoAtual": "q0", "simboloLido": "1", "novoEstado": "q1", "simboloEscrito": "0", "direcao": "R" },
+    { "estadoAtual": "q1", "simboloLido": "0", "novoEstado": "q1", "simboloEscrito": "0", "direcao": "R" },
+    { "estadoAtual": "q1", "simboloLido": "B", "novoEstado": "q2", "simboloEscrito": "B", "direcao": "L" },
+    { "estadoAtual": "q2", "simboloLido": "0", "novoEstado": "qf", "simboloEscrito": "B", "direcao": "S" }
+  ]
+}
