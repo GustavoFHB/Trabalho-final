@@ -1,37 +1,18 @@
-HELP.md
-.gradle
-build/
-!gradle/wrapper/gradle-wrapper.jar
-!**/src/main/**/build/
-!**/src/test/**/build/
-
-### STS ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
+### .NET ###
 bin/
-!**/src/main/**/bin/
-!**/src/test/**/bin/
+obj/
+*.user
+.vs/
+TestResults/
 
-### IntelliJ IDEA ###
-.idea
-*.iws
-*.iml
-*.ipr
-out/
-!**/src/main/**/out/
-!**/src/test/**/out/
+### Node / front ###
+node_modules/
+dist/
+*.log
 
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
+# O build do front vai para o wwwroot da API
+backend/src/SimuladorFormal.Api/wwwroot/
 
-### VS Code ###
+### IDEs ###
+.idea/
 .vscode/

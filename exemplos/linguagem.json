@@ -1,0 +1,8 @@
+{
+  "alfabeto": "a, b",
+  "cadeia": "abba",
+  "cadeia2": "ab",
+  "tamanhoMaximo": 3,
+  "tipoLinguagem": "regular",
+  "linguagem": "(a|b)*a"
+}
