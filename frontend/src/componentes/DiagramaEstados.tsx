@@ -49,10 +49,10 @@ export function DiagramaEstados({ arestas: entrada, estadoInicial, estadosFinais
     <div className="diagrama-wrap">
       <svg viewBox={`0 0 ${tamanho} ${tamanho}`} width={tamanho} height={tamanho} role="img" aria-label="Diagrama de estados">
         <defs>
-          <marker id="ponta" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <marker id={marcador} viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
             <path d="M0,0 L10,5 L0,10 z" className="ponta" />
           </marker>
-          <marker id="ponta-ativa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <marker id={`${marcador}-ativa`} viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
             <path d="M0,0 L10,5 L0,10 z" className="ponta-ativa" />
           </marker>
         </defs>
@@ -79,7 +79,7 @@ export function DiagramaEstados({ arestas: entrada, estadoInicial, estadosFinais
             return (
               <g key={`${a.de}-${a.para}`} className={`aresta ${ativa ? 'ativa' : ''}`}>
                 <title>{titulo}</title>
-                <path d={d} markerEnd={`url(#${ativa ? 'ponta-ativa' : 'ponta'})`} />
+                <path d={d} markerEnd={`url(#${marcador}${ativa ? '-ativa' : ''})`} />
                 <text x={lx} y={ly} dy="0.35em" textAnchor="middle">{rotulo}</text>
               </g>
             )
@@ -96,7 +96,7 @@ export function DiagramaEstados({ arestas: entrada, estadoInicial, estadosFinais
           return (
             <g key={`${a.de}-${a.para}`} className={`aresta ${ativa ? 'ativa' : ''}`}>
               <title>{titulo}</title>
-              <path d={`M${s.x},${s.y} Q${m.x},${m.y} ${e.x},${e.y}`} markerEnd={`url(#${ativa ? 'ponta-ativa' : 'ponta'})`} />
+              <path d={`M${s.x},${s.y} Q${m.x},${m.y} ${e.x},${e.y}`} markerEnd={`url(#${marcador}${ativa ? '-ativa' : ''})`} />
               <text x={m.x + nx * 8} y={m.y + ny * 8} dy="0.35em" textAnchor="middle">{rotulo}</text>
             </g>
           )
@@ -110,7 +110,7 @@ export function DiagramaEstados({ arestas: entrada, estadoInicial, estadosFinais
             <g key={e.nome} className={`estado ${atual ? 'atual' : ''} ${final ? 'final' : ''}`}>
               <title>{`${e.nome}${inicial ? ' (inicial)' : ''}${final ? ' (final)' : ''}`}</title>
               {inicial && (
-                <path d={`M${e.x - R - 22},${e.y} L${e.x - R - 2},${e.y}`} className="seta-inicial" markerEnd="url(#ponta)" />
+                <path d={`M${e.x - R - 22},${e.y} L${e.x - R - 2},${e.y}`} className="seta-inicial" markerEnd={`url(#${marcador})`} />
               )}
               <circle cx={e.x} cy={e.y} r={R} />
               {final && <circle cx={e.x} cy={e.y} r={R - 4} className="anel" />}
