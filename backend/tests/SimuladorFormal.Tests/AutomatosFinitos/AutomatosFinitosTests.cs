@@ -18,9 +18,9 @@ public class AutomatosFinitosTests
     }
 
     [Theory]
-    [InlineData("a")]    // termina em q1, que não é final
-    [InlineData("abb")]  // não existe δ(q2, b)
-    [InlineData("ba")]   // não existe δ(q0, b)
+    [InlineData("a")]
+    [InlineData("abb")]
+    [InlineData("ba")]
     [InlineData("")]
     public void ExemploDoEnunciado_RejeitaOutrasCadeias(string w) =>
         Assert.False(CatalogoAutomatos.Enunciado.Automato.Executar(w).Aceita);

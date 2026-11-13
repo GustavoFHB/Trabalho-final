@@ -6,13 +6,13 @@ import { FitaEntrada } from '../componentes/FitaEntrada'
 import { PilhaVisual } from '../componentes/PilhaVisual'
 import { usePlayer } from '../componentes/usePlayer'
 import { Veredito } from '../componentes/Veredito'
+import { rolarDentro } from '../componentes/rolagem'
 
 const VAZIA: TransicaoPilhaDto = { origem: '', simbolo: '', desempilha: '', destino: '', empilha: '' }
 const ou = (v: string) => v.trim() || 'λ'
 const exibir = (pilha: string) => pilha || 'λ'
 const preenchida = (t: TransicaoPilhaDto) => [t.origem, t.simbolo, t.desempilha, t.destino, t.empilha].some(v => v.trim())
 
-/** Rótulo das setas no formato dos livros: lido, desempilha / empilha. */
 const paraArestas = (ts: TransicaoPilhaDto[]): Aresta[] =>
   ts.filter(t => t.origem.trim() && t.destino.trim())
     .map(t => ({ de: t.origem.trim(), para: t.destino.trim(), rotulo: `${ou(t.simbolo)},${ou(t.desempilha)}/${ou(t.empilha)}` }))
@@ -37,7 +37,7 @@ export function AutomatoPilha() {
     setCarregando(true)
     setErro('')
     try {
-      const usadas = transicoes.filter(preenchida) // linhas totalmente em branco são ignoradas
+      const usadas = transicoes.filter(preenchida)
       const r = await simularPilha({
         entrada,
         estadoInicial,
@@ -194,7 +194,7 @@ function Execucao({ r, transicoes, inicial, finais }: { r: ResultadoPilha; trans
   const tabelaRef = useRef<HTMLTableSectionElement>(null)
 
   useEffect(() => {
-    tabelaRef.current?.children[player.atual]?.scrollIntoView({ block: 'nearest' })
+    rolarDentro(tabelaRef.current?.closest<HTMLElement>('.historico'), tabelaRef.current?.children[player.atual])
   }, [player.atual])
 
   const w = r.cadeia || 'λ'

@@ -41,7 +41,6 @@ public sealed class AutomatoFinito
         var listaTransicoes = transicoes.Distinct().ToList();
         var finais = estadosFinais.Select(e => e.Trim()).Where(e => e.Length > 0).Distinct().ToList();
 
-        // Q informado ou inferido (na ordem em que os estados aparecem).
         var listaEstados = estados.Select(e => e.Trim()).Where(e => e.Length > 0).Distinct().ToList();
         bool estadosInformados = listaEstados.Count > 0;
         if (!estadosInformados)
@@ -62,7 +61,6 @@ public sealed class AutomatoFinito
             }
         }
 
-        // Σ informado ou inferido.
         var listaAlfabeto = alfabeto.Distinct().ToList();
         if (listaAlfabeto.Count == 0)
             listaAlfabeto = listaTransicoes.Where(t => !t.Vazia).Select(t => t.Simbolo!.Value).Distinct().ToList();
@@ -105,7 +103,6 @@ public sealed class AutomatoFinito
     {
         var cadeia = Simbolos.NormalizarVazia(entrada);
 
-        // niveis[i]: estados alcançáveis depois de ler i símbolos, com o predecessor de cada um.
         var niveis = new List<Dictionary<string, Origem>>();
 
         var inicial = new Dictionary<string, Origem> { [EstadoInicial] = Origem.Inicio };
@@ -158,7 +155,6 @@ public sealed class AutomatoFinito
             ? $"A cadeia foi toda lida e o autômato terminou no estado final {string.Join(", ", finaisAlcancados)}."
             : $"A cadeia foi toda lida, mas nenhum estado alcançado ({{{string.Join(", ", Ordenar(ultimo.Keys))}}}) é final.");
 
-        // Caminho: até um estado final (aceita) ou, num AFD, até onde a execução chegou.
         List<EstadoCaminho>? caminho = null;
         if (aceita) caminho = Reconstruir(niveis, finaisAlcancados[0]);
         else if (ultimo.Count == 1) caminho = Reconstruir(niveis, ultimo.Keys.Single());

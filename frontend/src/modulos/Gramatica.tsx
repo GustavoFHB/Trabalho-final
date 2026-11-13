@@ -4,6 +4,7 @@ import { ArvoreDerivacao } from '../componentes/ArvoreDerivacao'
 import { Controles } from '../componentes/Controles'
 import { usePlayer } from '../componentes/usePlayer'
 import { Veredito } from '../componentes/Veredito'
+import { rolarDentro } from '../componentes/rolagem'
 
 const EXEMPLOS = [
   { nome: 'aⁿbⁿ', producoes: 'S -> aSb | λ', cadeia: 'aaabbb' },
@@ -96,7 +97,7 @@ function ResultadoGramatica({ r }: { r: RespostaDerivacao }) {
   const listaRef = useRef<HTMLOListElement>(null)
 
   useEffect(() => {
-    listaRef.current?.children[player.atual]?.scrollIntoView({ block: 'nearest' })
+    rolarDentro(listaRef.current, listaRef.current?.children[player.atual])
   }, [player.atual])
 
   const cadeiaExibida = resultado.cadeia === '' ? 'λ' : resultado.cadeia

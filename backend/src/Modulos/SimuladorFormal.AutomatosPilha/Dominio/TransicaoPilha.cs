@@ -22,7 +22,6 @@ public sealed record TransicaoPilha(string Origem, char? Simbolo, char? Desempil
                 return Empilha.Length == 0 ? "pilha inalterada" : $"empilha {Empilha}";
             if (Empilha == Desempilha.ToString())
                 return $"consulta o topo {Desempilha} (sem alterar)";
-            // Ex.: (a, Z/AZ): tirar Z e repor com A em cima equivale a empilhar A sobre Z.
             if (Empilha.Length > 1 && Empilha[^1] == Desempilha)
                 return $"empilha {Empilha[..^1]} sobre {Desempilha}";
             return Empilha.Length == 0

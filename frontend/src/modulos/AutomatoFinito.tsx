@@ -5,6 +5,7 @@ import { DiagramaEstados, type Aresta } from '../componentes/DiagramaEstados'
 import { FitaEntrada } from '../componentes/FitaEntrada'
 import { usePlayer } from '../componentes/usePlayer'
 import { Veredito } from '../componentes/Veredito'
+import { rolarDentro } from '../componentes/rolagem'
 
 type Modo = 'json' | 'personalizada'
 
@@ -17,7 +18,6 @@ interface LinhaTransicao {
 const VAZIAS = ['', 'λ', 'ε', '&']
 const LINHA_VAZIA: LinhaTransicao = { origem: '', simbolo: '', destino: '' }
 
-/** Exemplo do enunciado (q0 –a→ q1 –b→ q2), usado como conteúdo inicial do modo JSON. */
 const JSON_INICIAL: AutomatoJson = {
   estados: ['q0', 'q1', 'q2'],
   alfabeto: ['a', 'b'],
@@ -34,7 +34,6 @@ const rotuloSimbolo = (s: unknown) => (VAZIAS.includes(texto(s)) ? 'λ' : texto(
 const conjunto = (estados: string[]) => (estados.length === 0 ? '∅' : estados.length === 1 ? estados[0] : `{${estados.join(', ')}}`)
 const lista = (v: string) => v.split(',').map(s => s.trim()).filter(Boolean)
 
-/** Converte o texto do editor em objeto; devolve a mensagem de erro se o JSON estiver mal formado. */
 function lerJson(fonte: string): { automato?: AutomatoJson; erro?: string } {
   try {
     const a = JSON.parse(fonte)
@@ -45,7 +44,6 @@ function lerJson(fonte: string): { automato?: AutomatoJson; erro?: string } {
   }
 }
 
-/** Monta o mesmo formato JSON a partir do formulário do modo personalizado (linhas em branco são ignoradas). */
 function montarAutomato(inicial: string, finais: string, alfabeto: string, linhas: LinhaTransicao[]): AutomatoJson {
   const sigma = lista(alfabeto)
   return {
@@ -58,7 +56,6 @@ function montarAutomato(inicial: string, finais: string, alfabeto: string, linha
   }
 }
 
-/** Dados do diagrama a partir do JSON, ignorando campos mal preenchidos (o servidor é quem valida). */
 function desenho(a: AutomatoJson) {
   const transicoes = Array.isArray(a.transicoes) ? a.transicoes : []
   const arestas: Aresta[] = transicoes
@@ -91,7 +88,6 @@ export function AutomatoFinito() {
     setErro('')
   }
 
-  /** "Carregar um autômato por JSON": lê um arquivo .json do computador para o editor. */
   async function abrirArquivo(e: ChangeEvent<HTMLInputElement>) {
     const arquivo = e.target.files?.[0]
     e.target.value = ''
@@ -289,7 +285,7 @@ function ExecucaoAutomato({ r, automato }: { r: ResultadoAutomato; automato: Aut
   const tabelaRef = useRef<HTMLTableSectionElement>(null)
 
   useEffect(() => {
-    tabelaRef.current?.children[player.atual]?.scrollIntoView({ block: 'nearest' })
+    rolarDentro(tabelaRef.current?.closest<HTMLElement>('.historico'), tabelaRef.current?.children[player.atual])
   }, [player.atual])
 
   const temLambda = d.arestas.some(a => a.rotulo === 'λ')

@@ -1,7 +1,3 @@
-/**
- * Cadeia de entrada de um autômato, lida da esquerda para a direita.
- * Símbolos já consumidos ficam apagados; o próximo a ser lido fica marcado.
- */
 export function FitaEntrada({ cadeia, posicao }: { cadeia: string; posicao: number }) {
   if (cadeia.length === 0) {
     return (

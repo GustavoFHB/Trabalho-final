@@ -18,11 +18,11 @@ public static class MaquinaSomaUnaria
         new[] { "qf" },
         new[]
         {
-            new Transicao("q0", '0', "q0", '0', Direcao.Direita), // percorre o 1º número
-            new Transicao("q0", '1', "q1", '0', Direcao.Direita), // separador vira 0
-            new Transicao("q1", '0', "q1", '0', Direcao.Direita), // percorre o 2º número
-            new Transicao("q1", B, "q2", B, Direcao.Esquerda),    // fim da entrada: volta uma casa
-            new Transicao("q2", '0', "qf", B, Direcao.Parado),    // apaga o 0 excedente
+            new Transicao("q0", '0', "q0", '0', Direcao.Direita),
+            new Transicao("q0", '1', "q1", '0', Direcao.Direita),
+            new Transicao("q1", '0', "q1", '0', Direcao.Direita),
+            new Transicao("q1", B, "q2", B, Direcao.Esquerda),
+            new Transicao("q2", '0', "qf", B, Direcao.Parado),
         },
         new[] { "000100", "01", "1000", "00001" });
 }

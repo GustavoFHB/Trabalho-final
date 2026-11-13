@@ -5,10 +5,10 @@ import { DiagramaEstados, type Aresta } from '../componentes/DiagramaEstados'
 import { FitaTuring } from '../componentes/FitaTuring'
 import { usePlayer } from '../componentes/usePlayer'
 import { Veredito } from '../componentes/Veredito'
+import { rolarDentro } from '../componentes/rolagem'
 
 const VAZIA: TransicaoDto = { estadoAtual: '', simboloLido: '', novoEstado: '', simboloEscrito: '', direcao: 'R' }
 
-/** Rótulo das setas no formato dos livros: lido/escrito,direção. */
 const paraArestas = (ts: TransicaoDto[]): Aresta[] =>
   ts.map(t => ({ de: t.estadoAtual, para: t.novoEstado, rotulo: `${t.simboloLido}/${t.simboloEscrito},${t.direcao}` }))
 
@@ -44,7 +44,6 @@ export function Turing() {
     setErro('')
   }
 
-  /** Máquina em branco para o usuário montar as próprias regras. */
   function personalizar() {
     setMaquinaId('personalizada')
     setEstadoInicial('q0')
@@ -74,7 +73,6 @@ export function Turing() {
     }
   }
 
-  /** Apaga todas as regras da tabela. */
   function limparTransicoes() {
     if (!window.confirm(`Apagar as ${transicoes.length} transições da tabela?`)) return
     setMaquinaId('personalizada')
@@ -239,7 +237,7 @@ function Execucao({ r, transicoes, inicial, finais }: { r: ResultadoTuring; tran
   const tabelaRef = useRef<HTMLTableSectionElement>(null)
 
   useEffect(() => {
-    tabelaRef.current?.children[player.atual]?.scrollIntoView({ block: 'nearest' })
+    rolarDentro(tabelaRef.current?.closest<HTMLElement>('.historico'), tabelaRef.current?.children[player.atual])
   }, [player.atual])
 
   return (

@@ -6,7 +6,7 @@ interface NoPosicionado {
   x: number
   y: number
   folha: boolean
-  ordem: number // ordem de expansão (pré-ordem) — usada para revelar a árvore passo a passo
+  ordem: number
   pai?: NoPosicionado
 }
 
@@ -14,10 +14,6 @@ const DX = 46
 const DY = 64
 const R = 17
 
-/**
- * Layout simples: folhas recebem colunas da esquerda para a direita;
- * cada nó interno fica centralizado sobre seus filhos.
- */
 function posicionar(raiz: NoArvore) {
   const nos: NoPosicionado[] = []
   let coluna = 0
@@ -30,7 +26,7 @@ function posicionar(raiz: NoArvore) {
     if (no.folha) {
       no.x = coluna++ * DX + R + 8
     } else {
-      const minhaExpansao = ++ordemExpansao // o passo em que este nó é expandido
+      const minhaExpansao = ++ordemExpansao
       const filhos = n.filhos.map(f => visitar(f, prof + 1, no, minhaExpansao))
       no.x = (filhos[0].x + filhos[filhos.length - 1].x) / 2
     }
@@ -43,7 +39,6 @@ function posicionar(raiz: NoArvore) {
   return { nos, largura, altura }
 }
 
-/** Árvore de derivação; mostra apenas os nós já produzidos até o passo `passo`. */
 export function ArvoreDerivacao({ raiz, passo }: { raiz: NoArvore; passo: number }) {
   const { nos, largura, altura } = posicionar(raiz)
   const visiveis = nos.filter(n => n.ordem <= passo)

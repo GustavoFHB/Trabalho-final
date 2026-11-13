@@ -26,11 +26,11 @@ public static class CatalogoAutomatosPilha
         "Empilha um A para cada a e desempilha um A para cada b. Aceita quando sobra só o Z no fundo.",
         new AutomatoPilha("q0", new[] { "q2" }, 'Z', CriterioAceitacao.EstadoFinal, new[]
         {
-            T("q0", 'a', 'Z', "q0", "AZ"),  // primeiro a
-            T("q0", 'a', 'A', "q0", "AA"),  // demais a
-            T("q0", 'b', 'A', "q1", ""),    // primeiro b
-            T("q1", 'b', 'A', "q1", ""),    // demais b
-            T("q1", null, 'Z', "q2", "Z"),  // contou igual: aceita
+            T("q0", 'a', 'Z', "q0", "AZ"),
+            T("q0", 'a', 'A', "q0", "AA"),
+            T("q0", 'b', 'A', "q1", ""),
+            T("q1", 'b', 'A', "q1", ""),
+            T("q1", null, 'Z', "q2", "Z"),
         }),
         new[] { "aaabbb", "ab", "aabbb", "aaabb", "abab", "" });
 
@@ -43,7 +43,7 @@ public static class CatalogoAutomatosPilha
         {
             T("q0", 'a', null, "q0", "A"),
             T("q0", 'b', null, "q0", "B"),
-            T("q0", null, null, "q1", ""),  // palpite: chegou ao meio
+            T("q0", null, null, "q1", ""),
             T("q1", 'a', 'A', "q1", ""),
             T("q1", 'b', 'B', "q1", ""),
             T("q1", null, 'Z', "q2", "Z"),

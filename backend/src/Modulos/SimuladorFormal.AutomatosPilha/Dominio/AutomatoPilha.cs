@@ -101,7 +101,6 @@ public sealed class AutomatoPilha
 
             if (Aceita(c, n)) { aceito = i; break; }
 
-            // Para mostrar algo útil na rejeição: o ramo que mais leu (e, empatando, o mais longo).
             var m = nos[melhor];
             if (c.Posicao > m.Config.Posicao || (c.Posicao == m.Config.Posicao && no.Profundidade > m.Profundidade))
                 melhor = i;
@@ -110,7 +109,6 @@ public sealed class AutomatoPilha
 
             foreach (var t in candidatas)
             {
-                // Leitura: λ não consome; senão o símbolo atual precisa ser o da transição.
                 int posicao = c.Posicao;
                 if (t.Simbolo is { } a)
                 {
@@ -118,7 +116,6 @@ public sealed class AutomatoPilha
                     posicao++;
                 }
 
-                // Pilha: desempilha o topo exigido (se houver) e empilha a cadeia da transição.
                 var pilha = c.Pilha;
                 if (t.Desempilha is { } x)
                 {

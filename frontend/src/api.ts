@@ -1,5 +1,3 @@
-// Cliente da API .NET e tipos das respostas.
-
 export class ErroApi extends Error {}
 
 async function post<T>(url: string, corpo: unknown): Promise<T> {
@@ -25,8 +23,6 @@ async function get<T>(url: string): Promise<T> {
   if (!resp.ok) throw new ErroApi(`A API respondeu com erro ${resp.status}.`)
   return resp.json()
 }
-
-// ---------- Módulo 1 ----------
 
 export interface ValidacaoCadeia {
   cadeia: string
@@ -71,9 +67,6 @@ export const analisarLinguagem = (req: {
   linguagem: string
 }) => post<AnaliseLinguagem>('/api/linguagens/analisar', req)
 
-// ---------- Módulo 2 ----------
-
-/** Formato JSON de um autômato finito (o mesmo dos arquivos .json carregados na interface). */
 export interface AutomatoJson {
   estados?: string[]
   alfabeto?: string[]
@@ -125,8 +118,6 @@ export const exemplosAutomato = () => get<AutomatoExemplo[]>('/api/automatos/exe
 export const simularAutomato = (req: { automato: AutomatoJson; cadeia: string }) =>
   post<ResultadoAutomato>('/api/automatos/simular', req)
 
-// ---------- Módulo 3 ----------
-
 export interface NoArvore {
   simbolo: string
   filhos: NoArvore[]
@@ -164,8 +155,6 @@ export const derivar = (req: {
   simboloInicial: string
   cadeia: string
 }) => post<RespostaDerivacao>('/api/gramaticas/derivar', req)
-
-// ---------- Módulo 4 ----------
 
 export type CriterioAceitacao = 'EstadoFinal' | 'PilhaVazia'
 
@@ -226,8 +215,6 @@ export const simularPilha = (req: {
   limiteConfiguracoes: number
   transicoes: TransicaoPilhaDto[]
 }) => post<ResultadoPilha>('/api/pilha/simular', req)
-
-// ---------- Módulo 5 ----------
 
 export interface TransicaoDto {
   estadoAtual: string

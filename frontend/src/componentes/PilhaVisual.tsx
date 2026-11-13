@@ -1,4 +1,3 @@
-/** Pilha do AP desenhada na vertical. O conteúdo vem com o topo à esquerda ("AAZ": A no topo). */
 export function PilhaVisual({ conteudo }: { conteudo: string }) {
   const simbolos = [...conteudo]
   return (

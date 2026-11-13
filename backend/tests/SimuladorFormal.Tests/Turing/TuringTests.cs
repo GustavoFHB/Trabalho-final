@@ -8,10 +8,10 @@ namespace SimuladorFormal.Tests.Turing;
 public class TuringTests
 {
     [Theory]
-    [InlineData("000100", "00000")] // 3 + 2 (exemplo do enunciado)
-    [InlineData("01", "0")]         // 1 + 0
-    [InlineData("1000", "000")]     // 0 + 3
-    [InlineData("1", "")]           // 0 + 0
+    [InlineData("000100", "00000")]
+    [InlineData("01", "0")]
+    [InlineData("1000", "000")]
+    [InlineData("1", "")]
     public void SomaUnaria(string entrada, string esperado)
     {
         var r = MaquinaSomaUnaria.Definicao.Criar().Executar(entrada);

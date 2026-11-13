@@ -1,6 +1,5 @@
 import { useMemo } from 'react'
 
-/** Uma seta do diagrama. Arestas com a mesma origem e destino são agrupadas. */
 export interface Aresta {
   de: string
   para: string
@@ -11,18 +10,14 @@ interface Props {
   arestas: Aresta[]
   estadoInicial: string
   estadosFinais: string[]
-  /** Estados que existem mesmo sem transições (opcional). */
   estados?: string[]
-  /** Estado(s) em destaque: um só na MT/AFD; um conjunto no AFN. */
   estadosAtuais?: string[]
-  /** Arestas em uso no passo atual; `rotulo` substitui o rótulo agrupado. */
   ativas?: { de: string; para: string; rotulo?: string }[]
 }
 
 const R = 28
 const NENHUM: never[] = []
 
-/** Diagrama de estados em layout circular; destaca o(s) estado(s) atual(is) e as transições em uso. */
 export function DiagramaEstados({ arestas: entrada, estadoInicial, estadosFinais, estados: declarados = NENHUM, estadosAtuais = NENHUM, ativas = NENHUM }: Props) {
   const { estados, arestas, tamanho } = useMemo(() => {
     const nomes = [estadoInicial, ...declarados, ...entrada.flatMap(t => [t.de, t.para]), ...estadosFinais]
@@ -30,7 +25,7 @@ export function DiagramaEstados({ arestas: entrada, estadoInicial, estadosFinais
       .filter(Boolean)
     const unicos = [...new Set(nomes)]
     const raio = Math.max(90, unicos.length * 19)
-    const tamanho = raio * 2 + R * 2 + 200 // margem para os laços e seus rótulos
+    const tamanho = raio * 2 + R * 2 + 200
     const c = tamanho / 2
     const estados = unicos.map((nome, i) => {
       const ang = -Math.PI / 2 + (2 * Math.PI * i) / unicos.length
@@ -73,7 +68,6 @@ export function DiagramaEstados({ arestas: entrada, estadoInicial, estadosFinais
           const rotulo = rotuloAtivo ?? (a.rotulos.length > 2 ? `${a.rotulos.length} transições` : a.rotulos.join(' '))
 
           if (a.de === a.para) {
-            // laço: aponta para fora do centro do círculo
             const ang = Math.atan2(de.y - centro, de.x - centro)
             const ux = Math.cos(ang), uy = Math.sin(ang)
             const px = -uy, py = ux
@@ -91,7 +85,6 @@ export function DiagramaEstados({ arestas: entrada, estadoInicial, estadosFinais
             )
           }
 
-          // aresta curva (curvatura evita sobrepor a aresta de volta)
           const dx = para.x - de.x, dy = para.y - de.y
           const dist = Math.hypot(dx, dy)
           const ux = dx / dist, uy = dy / dist

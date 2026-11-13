@@ -10,7 +10,7 @@ public class AutomatosPilhaTests
     [Theory]
     [InlineData("ab", true)]
     [InlineData("aaabbb", true)]
-    [InlineData("", false)]       // n ≥ 1
+    [InlineData("", false)]
     [InlineData("aabbb", false)]
     [InlineData("aaabb", false)]
     [InlineData("abab", false)]
@@ -26,7 +26,7 @@ public class AutomatosPilhaTests
     public void AnBn_MostraLeituraEstadoEPilha()
     {
         var r = CatalogoAutomatosPilha.AnBn.Automato.Executar("aabb");
-        Assert.Equal(5, r.Passos.Count); // 4 leituras + o movimento λ final
+        Assert.Equal(5, r.Passos.Count);
         Assert.Equal(new[] { "Z", "AZ", "AAZ", "AZ", "Z" }, r.Passos.Select(p => p.Pilha));
         Assert.Equal(new[] { "a", "a", "b", "b", "λ" }, r.Passos.Select(p => p.Leitura));
         Assert.Equal("q2", r.EstadoFinal);
