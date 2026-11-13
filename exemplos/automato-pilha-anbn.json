@@ -1,0 +1,15 @@
+{
+  "entrada": "aaabbb",
+  "estadoInicial": "q0",
+  "estadosFinais": "q2",
+  "simboloInicialPilha": "Z",
+  "criterio": "EstadoFinal",
+  "limiteConfiguracoes": 10000,
+  "transicoes": [
+    { "origem": "q0", "simbolo": "a", "desempilha": "Z", "destino": "q0", "empilha": "AZ" },
+    { "origem": "q0", "simbolo": "a", "desempilha": "A", "destino": "q0", "empilha": "AA" },
+    { "origem": "q0", "simbolo": "b", "desempilha": "A", "destino": "q1", "empilha": "λ" },
+    { "origem": "q1", "simbolo": "b", "desempilha": "A", "destino": "q1", "empilha": "λ" },
+    { "origem": "q1", "simbolo": "λ", "desempilha": "Z", "destino": "q2", "empilha": "Z" }
+  ]
+}

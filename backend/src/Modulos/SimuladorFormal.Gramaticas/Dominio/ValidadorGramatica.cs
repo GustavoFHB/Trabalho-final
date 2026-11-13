@@ -24,7 +24,6 @@ internal static class ValidadorGramatica
 
         foreach (var p in g.Producoes)
         {
-            // Livre de contexto: o lado esquerdo é sempre uma única variável.
             if (!g.Variaveis.Contains(p.Esquerda))
                 throw new ArgumentException($"Na produção {p}, {p.Esquerda} não foi declarada como variável.");
 

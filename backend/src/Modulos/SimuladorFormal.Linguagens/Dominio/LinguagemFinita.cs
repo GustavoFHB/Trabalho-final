@@ -13,7 +13,7 @@ public sealed class LinguagemFinita : Linguagem
     public LinguagemFinita(Alfabeto sigma, string? definicao) : base(sigma, definicao ?? "")
     {
         var limpo = (definicao ?? "").Trim().TrimStart('{').TrimEnd('}');
-        if (limpo.Trim().Length == 0) return; // linguagem vazia ∅
+        if (limpo.Trim().Length == 0) return;
 
         foreach (var parte in limpo.Split(',', StringSplitOptions.TrimEntries))
         {

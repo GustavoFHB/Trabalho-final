@@ -33,6 +33,17 @@ const GRUPOS: Grupo[] = [
     ],
   },
   {
+    titulo: 'Autômato finito (AFD / AFN)',
+    variaveis: 'n = |w|, |Q| = número de estados, |δ| = número de transições',
+    linhas: [
+      { algoritmo: 'Montar δ a partir do JSON', melhor: 'Θ(|Q| + |δ|)', medio: 'Θ(|Q| + |δ|)', pior: 'Θ(|Q| + |δ|)', nota: 'Cada transição entra num dicionário indexado por (estado, símbolo); Q e Σ ficam em HashSet.' },
+      { algoritmo: 'Executar um AFD', melhor: 'Θ(1)', medio: 'Θ(n)', pior: 'Θ(n)', nota: 'Uma consulta O(1) a δ por símbolo. Melhor caso: não há transição para o 1º símbolo e o autômato trava.' },
+      { algoritmo: 'Executar um AFN (subconjuntos)', melhor: 'Θ(1)', medio: 'O(n·(|Q| + |δ|))', pior: 'O(n·(|Q| + |δ|))', nota: 'Mantém o conjunto de estados ativos: a cada símbolo, cada estado do conjunto segue suas transições e depois calcula o fecho-λ (BFS). Evita a explosão 2^|Q| de converter para AFD.' },
+      { algoritmo: 'Fecho-λ', melhor: 'Θ(|S|)', medio: 'O(|Q| + |δλ|)', pior: 'O(|Q| + |δλ|)', nota: 'Busca em largura só pelas transições λ; cada estado entra no conjunto uma vez.' },
+      { algoritmo: 'Reconstruir o caminho', melhor: 'Θ(n)', medio: 'Θ(n + λ)', pior: 'Θ(n + λ)', nota: 'Cada estado guarda de onde veio; basta seguir os ponteiros de trás para a frente.' },
+    ],
+  },
+  {
     titulo: 'Gramática livre de contexto (Earley)',
     variaveis: 'n = |w|, |G| = soma dos tamanhos das produções',
     linhas: [
@@ -47,6 +58,16 @@ const GRUPOS: Grupo[] = [
     linhas: [
       { algoritmo: 'Decidir aⁿbⁿ, sem histórico', melhor: 'Θ(1)', medio: 'Θ(n)*', pior: 'Θ(n)', nota: 'Uma operação de pilha por símbolo, com rejeição antecipada. *Modelo com proporção fixa de entradas aceitas.' },
       { algoritmo: 'Simulação com histórico', melhor: 'Θ(1)', medio: 'Θ(n²)*', pior: 'Θ(n²)', nota: 'O custo é a soma das alturas da pilha copiadas a cada passo. *Mesmo modelo do caso médio.' },
+    ],
+  },
+  {
+    titulo: 'Autômato com pilha',
+    variaveis: 'n = |w|, t = movimentos, h = altura da pilha, c = configurações exploradas',
+    linhas: [
+      { algoritmo: 'Um movimento', melhor: 'Θ(1)', medio: 'O(h)', pior: 'O(h)', nota: 'Escolher a transição é O(1) por candidata; a pilha imutável é copiada (O(h)) para que cada ramo tenha a sua.' },
+      { algoritmo: 'aⁿbⁿ (determinístico)', melhor: 'Θ(1)', medio: 'Θ(n)', pior: 'Θ(n)', nota: 'Exatamente n + 1 movimentos para cadeias aceitas (um por símbolo e um λ no fim). Melhor caso: a entrada começa com b e não há transição.' },
+      { algoritmo: 'Simular AP não determinístico (BFS)', melhor: 'Θ(n)', medio: 'O(c·h)', pior: 'exponencial', nota: 'A busca em largura explora todas as configurações (estado, posição, pilha) alcançáveis. Em palíndromos wwᴿ c = O(n²). Em geral c pode crescer exponencialmente, por isso há limite de configurações e de altura da pilha.' },
+      { algoritmo: 'Registrar o histórico', melhor: 'Θ(t·h)', medio: 'Θ(t·h)', pior: 'Θ(t·h)', nota: 'Cada passo guarda uma cópia da pilha para a visualização; custo do simulador, não do autômato.' },
     ],
   },
   {

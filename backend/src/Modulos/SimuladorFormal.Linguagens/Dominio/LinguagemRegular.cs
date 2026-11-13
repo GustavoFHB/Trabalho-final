@@ -17,7 +17,6 @@ public sealed class LinguagemRegular : Linguagem
             throw new ArgumentException("Informe a expressão regular que define L.");
         try
         {
-            // λ/ε representam a cadeia vazia: "a|λ" vira "a|", que também casa com "".
             var normalizada = expressao.Replace(" ", "").Replace("λ", "").Replace("ε", "");
             _regex = new Regex($"^(?:{normalizada})$", RegexOptions.CultureInvariant, TempoMaximo);
         }

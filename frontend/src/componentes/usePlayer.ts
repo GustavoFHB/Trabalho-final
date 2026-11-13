@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
 
-/** Navegação passo a passo com reprodução automática. */
 export function usePlayer(total: number, chave: unknown, intervaloMs = 550) {
   const [atual, setAtual] = useState(0)
   const [tocando, setTocando] = useState(false)

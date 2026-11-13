@@ -1,11 +1,11 @@
 import { useEffect, useRef } from 'react'
+import { centralizarDentro } from './rolagem'
 
-/** Fita da Máquina de Turing com o cabeçote destacado. */
 export function FitaTuring({ fita, cabecote, estado }: { fita: string; cabecote: number; estado: string }) {
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    ref.current?.querySelector('.celula.cabecote')?.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' })
+    centralizarDentro(ref.current, ref.current?.querySelector('.celula.cabecote'))
   }, [cabecote, fita])
 
   return (

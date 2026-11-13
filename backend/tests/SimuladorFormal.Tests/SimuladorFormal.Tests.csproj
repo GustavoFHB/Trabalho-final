@@ -23,7 +23,9 @@
   <ItemGroup>
     <ProjectReference Include="../../src/Modulos/SimuladorFormal.Automatos/SimuladorFormal.Automatos.csproj" />
     <ProjectReference Include="..\..\src\Modulos\SimuladorFormal.Linguagens\SimuladorFormal.Linguagens.csproj" />
+    <ProjectReference Include="..\..\src\Modulos\SimuladorFormal.AutomatosFinitos\SimuladorFormal.AutomatosFinitos.csproj" />
     <ProjectReference Include="..\..\src\Modulos\SimuladorFormal.Gramaticas\SimuladorFormal.Gramaticas.csproj" />
+    <ProjectReference Include="..\..\src\Modulos\SimuladorFormal.AutomatosPilha\SimuladorFormal.AutomatosPilha.csproj" />
     <ProjectReference Include="..\..\src\Modulos\SimuladorFormal.Turing\SimuladorFormal.Turing.csproj" />
   </ItemGroup>
 

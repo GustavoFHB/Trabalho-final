@@ -1,5 +1,3 @@
-// Cliente da API .NET e tipos das respostas.
-
 export class ErroApi extends Error {}
 
 async function post<T>(url: string, corpo: unknown): Promise<T> {
@@ -25,8 +23,6 @@ async function get<T>(url: string): Promise<T> {
   if (!resp.ok) throw new ErroApi(`A API respondeu com erro ${resp.status}.`)
   return resp.json()
 }
-
-// ---------- Módulo 1 ----------
 
 export interface ValidacaoCadeia {
   cadeia: string
@@ -71,7 +67,56 @@ export const analisarLinguagem = (req: {
   linguagem: string
 }) => post<AnaliseLinguagem>('/api/linguagens/analisar', req)
 
-// ---------- Módulo 3 ----------
+export interface AutomatoJson {
+  estados?: string[]
+  alfabeto?: string[]
+  estadoInicial: string
+  estadosFinais?: string[]
+  transicoes?: { origem: string; simbolo: string | null; destino: string }[]
+}
+
+export interface AutomatoExemplo {
+  id: string
+  nome: string
+  descricao: string
+  exemplos: string[]
+  automato: AutomatoJson
+}
+
+export interface TransicaoAf {
+  origem: string
+  simbolo: string | null
+  destino: string
+  simboloTexto: string
+}
+
+export interface PassoAutomato {
+  numero: number
+  posicao: number
+  simbolo: string
+  estadosAntes: string[]
+  transicoes: TransicaoAf[]
+  estadosDepois: string[]
+}
+
+export interface ResultadoAutomato {
+  aceita: boolean
+  deterministico: boolean
+  mensagem: string
+  cadeia: string
+  simbolosLidos: number
+  estadosIniciais: string[]
+  transicoesIniciais: TransicaoAf[]
+  passos: PassoAutomato[]
+  estadosFinaisAlcancados: string[]
+  caminho: { estado: string; simbolo: string | null }[] | null
+  caminhoTexto: string | null
+}
+
+export const exemplosAutomato = () => get<AutomatoExemplo[]>('/api/automatos/exemplos')
+
+export const simularAutomato = (req: { automato: AutomatoJson; cadeia: string }) =>
+  post<ResultadoAutomato>('/api/automatos/simular', req)
 
 export interface NoArvore {
   simbolo: string
@@ -111,7 +156,65 @@ export const derivar = (req: {
   cadeia: string
 }) => post<RespostaDerivacao>('/api/gramaticas/derivar', req)
 
-// ---------- Módulo 5 ----------
+export type CriterioAceitacao = 'EstadoFinal' | 'PilhaVazia'
+
+export interface TransicaoPilhaDto {
+  origem: string
+  simbolo: string
+  desempilha: string
+  destino: string
+  empilha: string
+}
+
+export interface AutomatoPilhaExemplo {
+  id: string
+  nome: string
+  descricao: string
+  estadoInicial: string
+  estadosFinais: string[]
+  simboloInicialPilha: string
+  criterio: CriterioAceitacao
+  exemplos: string[]
+  transicoes: TransicaoPilhaDto[]
+}
+
+export interface PassoPilha {
+  numero: number
+  estado: string
+  posicao: number
+  restante: string
+  leitura: string
+  pilha: string
+  transicao: { origem: string; simboloTexto: string; desempilhaTexto: string; destino: string; empilhaTexto: string }
+  operacao: string
+  novoEstado: string
+  pilhaDepois: string
+}
+
+export interface ResultadoPilha {
+  aceita: boolean
+  deterministico: boolean
+  criterio: CriterioAceitacao
+  mensagem: string
+  cadeia: string
+  configuracoesExploradas: number
+  estadoFinal: string
+  posicaoFinal: number
+  pilhaFinal: string
+  passos: PassoPilha[]
+}
+
+export const exemplosPilha = () => get<AutomatoPilhaExemplo[]>('/api/pilha/exemplos')
+
+export const simularPilha = (req: {
+  entrada: string
+  estadoInicial: string
+  estadosFinais: string
+  simboloInicialPilha: string
+  criterio: CriterioAceitacao
+  limiteConfiguracoes: number
+  transicoes: TransicaoPilhaDto[]
+}) => post<ResultadoPilha>('/api/pilha/simular', req)
 
 export interface TransicaoDto {
   estadoAtual: string

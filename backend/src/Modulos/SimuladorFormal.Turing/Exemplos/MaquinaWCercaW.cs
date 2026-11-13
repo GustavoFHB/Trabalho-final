@@ -27,8 +27,8 @@ public static class MaquinaWCercaW
         var t = new List<Transicao>();
         foreach (var s in Sigma)
         {
-            var levando = $"q_{s}";      // carregando s até o #
-            var comparando = $"qc_{s}";  // depois do #, procurando o próximo não marcado
+            var levando = $"q_{s}";
+            var comparando = $"qc_{s}";
 
             t.Add(new Transicao("q0", s, levando, Marca, Direcao.Direita));
             foreach (var y in Sigma)
@@ -36,10 +36,8 @@ public static class MaquinaWCercaW
             t.Add(new Transicao(levando, '#', comparando, '#', Direcao.Direita));
             t.Add(new Transicao(comparando, Marca, comparando, Marca, Direcao.Direita));
             t.Add(new Transicao(comparando, s, "qvolta", Marca, Direcao.Esquerda));
-            // Qualquer outro símbolo em qc_s não tem transição: a máquina para e rejeita.
         }
 
-        // Volta até o # e depois até a última marca do lado esquerdo.
         foreach (var y in Sigma.Append(Marca))
             t.Add(new Transicao("qvolta", y, "qvolta", y, Direcao.Esquerda));
         t.Add(new Transicao("qvolta", '#', "qvolta2", '#', Direcao.Esquerda));
@@ -47,7 +45,6 @@ public static class MaquinaWCercaW
             t.Add(new Transicao("qvolta2", y, "qvolta2", y, Direcao.Esquerda));
         t.Add(new Transicao("qvolta2", Marca, "q0", Marca, Direcao.Direita));
 
-        // Lado esquerdo todo marcado: o lado direito também precisa estar todo marcado.
         t.Add(new Transicao("q0", '#', "qverifica", '#', Direcao.Direita));
         t.Add(new Transicao("qverifica", Marca, "qverifica", Marca, Direcao.Direita));
         t.Add(new Transicao("qverifica", B, "qaceita", B, Direcao.Parado));

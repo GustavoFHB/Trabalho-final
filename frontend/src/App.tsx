@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { AutomatoFinito, AutomatoPilha } from './modulos/Automatos'
+import { AutomatoFinito } from './modulos/AutomatoFinito'
+import { AutomatoPilha } from './modulos/AutomatoPilha'
 import { Complexidade } from './modulos/Complexidade'
 import { Gramatica } from './modulos/Gramatica'
 import { Linguagens } from './modulos/Linguagens'
@@ -7,9 +8,9 @@ import { Turing } from './modulos/Turing'
 
 const ABAS = [
   { id: 'linguagens', nome: 'Linguagens formais', simbolo: 'Σ*', Componente: Linguagens },
-  { id: 'finito', nome: 'AFD / AFN', simbolo: 'q₀', Componente: AutomatoFinito },
+  { id: 'automato', nome: 'Autômato finito', simbolo: 'AFD', Componente: AutomatoFinito },
   { id: 'gramatica', nome: 'Gramática', simbolo: 'S→aSb', Componente: Gramatica },
-  { id: 'pilha', nome: 'Autômato com pilha', simbolo: '⊥', Componente: AutomatoPilha },
+  { id: 'pilha', nome: 'Autômato com pilha', simbolo: 'aⁿbⁿ', Componente: AutomatoPilha },
   { id: 'turing', nome: 'Máquina de Turing', simbolo: 'δ', Componente: Turing },
   { id: 'complexidade', nome: 'Complexidade', simbolo: 'Θ(n)', Componente: Complexidade },
 ] as const

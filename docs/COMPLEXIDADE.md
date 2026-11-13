@@ -1,46 +1,70 @@
 # Análise de complexidade
 
-**O(f)** indica limite superior; **Ω(f)**, inferior; **Θ(f)**, os dois ao mesmo tempo.
-Melhor e pior caso comparam entradas de mesmo tamanho. Caso médio depende de
-uma distribuição: onde não há modelo probabilístico, a tabela dá um limite
-válido para qualquer distribuição ou indica que não há média única. Custos de
-tabelas hash são esperados; nomes de estados são limitados pela implementação.
-A análise separa o núcleo da simulação do histórico retornado para a interface.
+Notação: **O(f)** limite superior, **Ω(f)** limite inferior, **Θ(f)** limite justo (O e Ω ao mesmo tempo).
+
+## Módulo 1 — Linguagens formais
+
+n = |w|, m = |v|, s = |Σ|, k = tamanho máximo listado.
 
 | Algoritmo | Melhor | Médio | Pior | Justificativa |
 |---|---|---|---|---|
-| M1 — validação em Σ* | Θ(n) | Θ(n) | Θ(n) | Visita toda a cadeia para listar posições inválidas. n é seu comprimento. |
-| M1 — comprimento, concatenação e reverso | Θ(1), Θ(n+m), Θ(n) | Mesmos custos | Mesmos custos | Comprimento armazenado; concatenação copia os dois operandos; reverso percorre n símbolos. |
-| M1 — gerar Σ* e Σ+ até k | Θ(k+W) | Θ(k+W) | Θ(k+W) | W é o tamanho total das cadeias efetivamente geradas, contando um custo constante por cadeia. O total teórico é calculado em Θ(k). Sem truncamento, W = Θ(k·sᵏ) para s = \|Σ\| ≥ 2 e k ≥ 1; para s = 1, W = Θ(k²). A listagem é limitada a 5000 resultados por fecho. |
-| M1 — pertinência em L finita | Θ(n) | Θ(n) esperado | O(n·d) | Após validar a cadeia, consulta ao conjunto; seu hash custa Θ(n). d é o número de palavras na linguagem; colisões podem exigir até d comparações. Exclui montagem do conjunto. |
-| M1 — pertinência por regex | Ω(n) | Depende do padrão e das entradas | Pode ser exponencial sem timeout | A validação lê a cadeia inteira. O motor usa backtracking; a implementação aplica timeout de 1 s ao casamento. Não há uma média única para regex fornecidas pelo usuário. |
-| M2 — AFD, após indexar regras | Θ(1) | Θ(n) no modelo descrito abaixo | Θ(n) | Um estado e no máximo uma regra por símbolo; histórico de tamanho linear. Uma falha imediata permite rejeição no primeiro símbolo. |
-| M2 — AFN, após indexar regras | Ω(1) | O((n+1)(q+t)) | O((n+1)(q+t)) | Conjunto de estados ativos e busca em largura no fecho λ. Por símbolo, visita até q estados e t regras. Fecho inicial também conta. |
-| M3 — variáveis anuláveis | Θ(g) | O(v·g) | O(v·g) | Em cada rodada, percorre produções de tamanho total g (incluindo lados esquerdos). Há no máximo v+1 rodadas, para v variáveis. |
-| M3 — reconhecimento de Earley | Θ(1) | O(n³), com gramática fixa | O(n³), com gramática fixa | Um terminal inválido na primeira posição é detectado antes de criar os conjuntos. Para entradas válidas, há n+1 conjuntos com O(n) itens cada; completar um item pode percorrer O(n) candidatos. |
-| M3 — reconstruir árvore e derivação | Θ(T) e O(p·f) | Mesmos limites em função da saída | Mesmos limites em função da saída | T é o número de nós reconstruídos. A derivação usa p expansões e percorre ou copia formas sentenciais de tamanho máximo f. |
-| M4 — AP, sem histórico | Θ(1) | Θ(n) no modelo descrito abaixo | Θ(n) | Operações de pilha em O(1) amortizado por símbolo; rejeição antecipada se a ordem ou a pilha não permitem uma transição. |
-| M4 — AP, com histórico | Θ(1) | Θ(n²) no modelo descrito abaixo | Θ(n²) | Cada passo copia a pilha. Para aⁿᐟ²bⁿᐟ², a soma das alturas cresce quadraticamente. |
-| M5 — MT de soma unária, passos da máquina | Θ(n) | Θ(n) | Θ(n) | Considerando somente entradas bem formadas: uma varredura, exatamente n+2 transições. |
-| M5 — MT de w#w, passos da máquina | Θ(1) | Θ(n²) no modelo descrito abaixo | Θ(n²) | Falha imediata se a primeira leitura não tiver regra. Para duas metades iguais, há Θ(n) idas e voltas de Θ(n) passos. |
-| M5 — fita e histórico | Θ(n) quando t=0 | O((t+1)(n+t)) | O((t+1)(n+t)) | O simulador copia a fita em cada transição e ao final. Após t passos, a fita tem até n+t+2 células; inserir à esquerda em lista também pode deslocar toda a fita. |
+| Validar w ∈ Σ* (`ValidadorCadeia.Validar`) | Θ(n) | Θ(n) | Θ(n) | Percorre toda a cadeia para listar todas as posições inválidas; cada consulta ao `HashSet<char>` de Σ é O(1) esperado. |
+| Tamanho \|w\| | Θ(1) | Θ(1) | Θ(1) | A string guarda o comprimento. |
+| Concatenação w·v | Θ(n+m) | Θ(n+m) | Θ(n+m) | Cópia dos dois operandos. |
+| Reverso wᴿ | Θ(n) | Θ(n) | Θ(n) | Uma passagem. |
+| Enumerar Σ* / Σ+ até k | Θ(k·sᵏ) | Θ(k·sᵏ) | Θ(k·sᵏ) | Existem Σᵢ₌₀..ₖ sⁱ = (sᵏ⁺¹−1)/(s−1) cadeias e cada uma custa O(k) para ser montada. Exponencial em k, por isso a API limita k ≤ 12 e no máximo 5000 cadeias. |
+| w ∈ L, L finita | Θ(n) | Θ(n) | Θ(n) | Validação + `HashSet<string>` (o hash da cadeia custa Θ(n)). |
+| w ∈ L, L regular | Ω(n) | O(n) | O(2ⁿ) | O motor `Regex` do .NET usa backtracking: linear nos casos comuns, exponencial em padrões patológicos (ex.: `(a*)*b`). Há timeout de 1 s. Um AFD equivalente seria Θ(n). |
 
-Para ilustrar **caso médio** com hipótese explícita, suponha em cada tamanho
-admissível n que metade das entradas chegue ao fim com sucesso e metade falhe
-logo no primeiro símbolo. No AFD, considere um autômato que aceite cadeias de
-comprimento arbitrário, por exemplo a*. No AP, considere tamanhos pares; na MT
-de w#w, ímpares. A média é proporcional ao custo dos casos aceitos: Θ(n) para
-o AFD, Θ(n) para o AP sem histórico, Θ(n²) para o AP com histórico e Θ(n²)
-passos para w#w. Outra distribuição pode mudar esses resultados.
+## Módulo 2 — Autômato finito
 
-No **AF**, q é o número de estados e t o número de transições cadastradas. A
-validação e a indexação usam Θ(q+s+t) tempo e espaço esperados, onde s = |Σ|.
-O histórico do AFD ocupa O(n); o do AFN, O((n+1)(q+t)), incluindo regras
-percorridas. No **AP**, a pilha ocupa O(n), mas o histórico pode ocupar Θ(n²).
-As cotas do núcleo contam a cadeia já normalizada; ler a requisição JSON e
-materializar a entrada do usuário tem custo adicional linear em seu tamanho.
+n = |w|, |Q| = número de estados, |δ| = número de transições, |δλ| = transições λ.
 
-Na **MT**, t denota transições executadas, não regras cadastradas. O histórico
-custa Θ(n²) para soma unária e Θ(n³) no pior caso de w#w, pois nessas máquinas
-a fita tem Θ(n) células durante a execução. O limite de passos do simulador
-não demonstra que a máquina entraria em loop.
+| Algoritmo | Melhor | Médio | Pior | Justificativa |
+|---|---|---|---|---|
+| Montar o autômato do JSON (`LeitorAutomato`, construtor de `AutomatoFinito`) | Θ(\|Q\|+\|δ\|) | Θ(\|Q\|+\|δ\|) | Θ(\|Q\|+\|δ\|) | Cada transição entra em `Dictionary<(estado, símbolo?), List<destino>>`; Q, Σ e F ficam em `HashSet`. |
+| Executar um AFD | Θ(1) | Θ(n) | Θ(n) | Uma consulta O(1) a δ por símbolo. Melhor caso: não existe δ(q0, w₁) e o autômato trava no primeiro símbolo. |
+| Executar um AFN (método dos subconjuntos, `AutomatoFinito.Executar`) | Θ(1) | O(n·(\|Q\|+\|δ\|)) | O(n·(\|Q\|+\|δ\|)) | O conjunto ativo tem no máximo \|Q\| estados e, em cada símbolo, cada transição é usada no máximo uma vez, mais o fecho-λ. Simular sobre conjuntos evita construir o AFD equivalente, que pode ter 2^\|Q\| estados. |
+| Fecho-λ (`FechoLambda`) | Θ(1) | O(\|Q\|+\|δλ\|) | O(\|Q\|+\|δλ\|) | BFS só pelas transições λ; cada estado entra no conjunto uma única vez. Θ(1) em autômatos sem λ (retorno imediato). |
+| Reconstruir o caminho q0 → … → qf | Θ(n) | Θ(n+k) | Θ(n+k) | Cada estado de cada nível guarda seu predecessor; seguir os ponteiros custa um passo por símbolo lido mais k transições λ. |
+
+## Módulo 3 — Gramática livre de contexto
+
+n = |w|, |G| = soma dos tamanhos dos lados direitos, |V| = número de variáveis.
+
+| Algoritmo | Melhor | Médio | Pior | Justificativa |
+|---|---|---|---|---|
+| Variáveis anuláveis (ponto fixo) | Θ(\|G\|) | O(\|V\|·\|G\|) | O(\|V\|·\|G\|) | Cada rodada percorre todas as produções e marca pelo menos uma variável nova; no máximo \|V\| rodadas. |
+| Reconhecedor de Earley | Θ(n) | O(n²) | O(n³) | Há n+1 conjuntos; cada Sₖ tem O(k·\|G\|) itens. Uma conclusão percorre os itens de Sᵢ que esperam a variável (O(n)). Pior caso O(n³) em gramáticas ambíguas (`E → E+E`); O(n²) em gramáticas não ambíguas; Θ(n) em gramáticas LR(k), como `S → aSb \| λ`. |
+| Reconstruir a árvore | Θ(t) | Θ(t) | Θ(t) | t = número de nós; cada item guarda ponteiros para o item anterior e para o filho que o completou, então cada nó é visitado uma vez. |
+| Derivação mais à esquerda | Θ(p·f) | Θ(p·f) | Θ(p·f) | p passos (= número de nós internos); em cada um procura a variável mais à esquerda numa forma sentencial de tamanho f = O(n + p). |
+
+**Por que Earley e não busca de derivações?** Gerar derivações por força bruta é exponencial e não termina em gramáticas recursivas à esquerda. CYK exigiria converter a gramática para a Forma Normal de Chomsky, o que mudaria a árvore mostrada ao aluno. Earley trabalha com a gramática original, aceita qualquer GLC e tem pior caso polinomial.
+
+## Módulo 4 — Autômato com pilha
+
+n = |w|, t = movimentos do caminho exibido, h = altura da pilha, c = configurações (estado, posição, pilha) exploradas.
+
+| Algoritmo | Melhor | Médio | Pior | Justificativa |
+|---|---|---|---|---|
+| Empilhar / desempilhar (`Pilha`) | Θ(1) | O(h) | O(h) | A pilha é imutável (cada ramo não determinístico tem a sua), então cada operação cria uma nova cadeia de tamanho h. |
+| aⁿbⁿ (determinístico) | Θ(1) | Θ(n) | Θ(n) | Exatamente n+1 movimentos numa cadeia aceita (um por símbolo e um λ no fim). Melhor caso: começa com b e trava. Contando a cópia da pilha, o simulador custa Θ(n²). |
+| AP não determinístico (BFS em `AutomatoPilha.Executar`) | Θ(n) | O(c·h) | exponencial | A busca em largura visita cada configuração uma vez (`HashSet` de configurações). Em wwᴿ, c = O(n²) (n pontos possíveis para o "meio"). Em geral c pode crescer exponencialmente e laços λ podem empilhar sem fim, por isso há limite de configurações (padrão 10 000) e de altura (500). |
+| Detectar determinismo | Θ(\|δ\|) | O(\|δ\|²) | O(\|δ\|²) | Compara as transições de cada estado duas a duas. |
+| Reconstruir os passos | Θ(t·h) | Θ(t·h) | Θ(t·h) | Segue os ponteiros para o nó pai; cada passo guarda a pilha antes e depois. |
+
+Um AP determinístico reconhece aⁿbⁿ em tempo linear. Para uma GLC qualquer, simular diretamente o AP não determinístico equivalente pode ser exponencial, enquanto Earley é O(n³) — por isso o Módulo 3 usa Earley.
+
+## Módulo 5 — Máquina de Turing
+
+n = |entrada|, t = passos executados.
+
+| Algoritmo | Melhor | Médio | Pior | Justificativa |
+|---|---|---|---|---|
+| Um passo de δ | Θ(1) | Θ(1) | O(\|δ\|) | `Dictionary<(estado, símbolo), Transicao>`. O original em Java fazia busca linear O(\|δ\|) a cada passo. |
+| Mover o cabeçote | Θ(1) | Θ(1) amortizado | O(\|fita\|) | Crescer à direita é `List.Add` (amortizado O(1)); crescer à esquerda é `Insert(0)` (O(\|fita\|)), raro. |
+| Soma unária (opção B) | Θ(n) | Θ(n) | Θ(n) | Uma varredura: exatamente n + 2 passos. |
+| Reconhecer w#w (opção A) | Θ(1) | Θ(n²) | Θ(n²) | Para cada um dos \|w\| símbolos o cabeçote vai até o outro lado do # e volta (≈ 2n movimentos): Σ 2n·\|w\| = Θ(n²). Melhor caso: o primeiro símbolo não tem transição e a máquina para imediatamente. |
+| Guardar o histórico | Θ(t·n) | Θ(t·n) | Θ(t·n) | Cada passo salva uma cópia da fita para a visualização. É custo do simulador, não da máquina: no w#w o simulador inteiro custa Θ(n³). |
+
+A execução tem um limite de passos configurável (padrão 1000, máximo 100 000), pois o problema da parada é indecidível: não há como saber, em geral, se uma MT vai parar.

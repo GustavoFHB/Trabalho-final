@@ -1,29 +1,31 @@
-import { useId, useMemo } from 'react'
-import type { TransicaoDto } from '../api'
+import { useMemo } from 'react'
+
+export interface Aresta {
+  de: string
+  para: string
+  rotulo: string
+}
 
 interface Props {
-  transicoes: TransicaoDto[]
+  arestas: Aresta[]
   estadoInicial: string
   estadosFinais: string[]
-  estadoAtual?: string
   estados?: string[]
-  estadosAtivos?: string[]
-  somenteLeitura?: boolean
-  transicaoAtiva?: { de: string; para: string; rotulo: string }
+  estadosAtuais?: string[]
+  ativas?: { de: string; para: string; rotulo?: string }[]
 }
 
 const R = 28
+const NENHUM: never[] = []
 
-/** Diagrama de estados em layout circular; destaca o estado atual e a transição em uso. */
-export function DiagramaEstados({ transicoes, estadoInicial, estadosFinais, estadoAtual, transicaoAtiva, estados: estadosDeclarados, estadosAtivos, somenteLeitura }: Props) {
-  const marcador = useId()
+export function DiagramaEstados({ arestas: entrada, estadoInicial, estadosFinais, estados: declarados = NENHUM, estadosAtuais = NENHUM, ativas = NENHUM }: Props) {
   const { estados, arestas, tamanho } = useMemo(() => {
-    const nomes = [estadoInicial, ...(estadosDeclarados ?? []), ...transicoes.flatMap(t => [t.estadoAtual, t.novoEstado]), ...estadosFinais]
+    const nomes = [estadoInicial, ...declarados, ...entrada.flatMap(t => [t.de, t.para]), ...estadosFinais]
       .map(s => s.trim())
       .filter(Boolean)
     const unicos = [...new Set(nomes)]
     const raio = Math.max(90, unicos.length * 19)
-    const tamanho = raio * 2 + R * 2 + 200 // margem para os laços e seus rótulos
+    const tamanho = raio * 2 + R * 2 + 200
     const c = tamanho / 2
     const estados = unicos.map((nome, i) => {
       const ang = -Math.PI / 2 + (2 * Math.PI * i) / unicos.length
@@ -31,14 +33,14 @@ export function DiagramaEstados({ transicoes, estadoInicial, estadosFinais, esta
     })
 
     const grupos = new Map<string, { de: string; para: string; rotulos: string[] }>()
-    for (const t of transicoes) {
-      const chave = `${t.estadoAtual}→${t.novoEstado}`
-      const g = grupos.get(chave) ?? { de: t.estadoAtual, para: t.novoEstado, rotulos: [] }
-      g.rotulos.push(somenteLeitura ? t.simboloLido : `${t.simboloLido}/${t.simboloEscrito},${t.direcao}`)
+    for (const t of entrada) {
+      const chave = `${t.de}→${t.para}`
+      const g = grupos.get(chave) ?? { de: t.de, para: t.para, rotulos: [] }
+      if (!g.rotulos.includes(t.rotulo)) g.rotulos.push(t.rotulo)
       grupos.set(chave, g)
     }
     return { estados, arestas: [...grupos.values()], tamanho }
-  }, [transicoes, estadoInicial, estadosFinais, estadosDeclarados, somenteLeitura])
+  }, [entrada, estadoInicial, estadosFinais, declarados])
 
   const pos = new Map(estados.map(e => [e.nome, e]))
   const centro = tamanho / 2
@@ -59,12 +61,13 @@ export function DiagramaEstados({ transicoes, estadoInicial, estadosFinais, esta
           const de = pos.get(a.de)
           const para = pos.get(a.para)
           if (!de || !para) return null
-          const ativa = transicaoAtiva?.de === a.de && transicaoAtiva?.para === a.para
+          const emUso = ativas.filter(t => t.de === a.de && t.para === a.para)
+          const ativa = emUso.length > 0
           const titulo = `${a.de} → ${a.para}: ${a.rotulos.join('  ')}`
-          const rotulo = ativa ? transicaoAtiva!.rotulo : a.rotulos.length > 2 ? `${a.rotulos.length} transições` : a.rotulos.join(' ')
+          const rotuloAtivo = emUso.find(t => t.rotulo)?.rotulo
+          const rotulo = rotuloAtivo ?? (a.rotulos.length > 2 ? `${a.rotulos.length} transições` : a.rotulos.join(' '))
 
           if (a.de === a.para) {
-            // laço: aponta para fora do centro do círculo
             const ang = Math.atan2(de.y - centro, de.x - centro)
             const ux = Math.cos(ang), uy = Math.sin(ang)
             const px = -uy, py = ux
@@ -82,7 +85,6 @@ export function DiagramaEstados({ transicoes, estadoInicial, estadosFinais, esta
             )
           }
 
-          // aresta curva (curvatura evita sobrepor a aresta de volta)
           const dx = para.x - de.x, dy = para.y - de.y
           const dist = Math.hypot(dx, dy)
           const ux = dx / dist, uy = dy / dist
@@ -103,7 +105,7 @@ export function DiagramaEstados({ transicoes, estadoInicial, estadosFinais, esta
         {estados.map(e => {
           const final = estadosFinais.includes(e.nome)
           const inicial = e.nome === estadoInicial
-          const atual = e.nome === estadoAtual || estadosAtivos?.includes(e.nome)
+          const atual = estadosAtuais.includes(e.nome)
           return (
             <g key={e.nome} className={`estado ${atual ? 'atual' : ''} ${final ? 'final' : ''}`}>
               <title>{`${e.nome}${inicial ? ' (inicial)' : ''}${final ? ' (final)' : ''}`}</title>

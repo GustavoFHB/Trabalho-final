@@ -47,7 +47,6 @@ public sealed class ReconhecedorEarley
 
         for (int k = 0; k <= n; k++)
         {
-            // S[k] cresce durante o laço: novos itens também são processados.
             for (int idx = 0; idx < S[k].Quantidade; idx++)
             {
                 var item = S[k].Itens[idx];
@@ -81,7 +80,6 @@ public sealed class ReconhecedorEarley
     private static void Concluir(ConjuntoEarley[] S, int k, ItemEarley completo, char variavel)
     {
         var aguardando = S[completo.Inicio].AguardandoVariavel(variavel);
-        // Snapshot: itens adicionados depois em Sₖ são cobertos pelo tratamento de anuláveis.
         int quantidade = aguardando.Count;
         for (int i = 0; i < quantidade; i++)
             S[k].Adicionar(aguardando[i].Avancar(OrigemItem.Conclusao, filho: completo));
