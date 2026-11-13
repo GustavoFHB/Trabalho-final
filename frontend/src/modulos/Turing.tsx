@@ -1,12 +1,16 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { exemplosTuring, simularTuring, type MaquinaExemplo, type ResultadoTuring, type TransicaoDto } from '../api'
 import { Controles } from '../componentes/Controles'
-import { DiagramaEstados } from '../componentes/DiagramaEstados'
+import { DiagramaEstados, type Aresta } from '../componentes/DiagramaEstados'
 import { FitaTuring } from '../componentes/FitaTuring'
 import { usePlayer } from '../componentes/usePlayer'
 import { Veredito } from '../componentes/Veredito'
 
 const VAZIA: TransicaoDto = { estadoAtual: '', simboloLido: '', novoEstado: '', simboloEscrito: '', direcao: 'R' }
+
+/** Rótulo das setas no formato dos livros: lido/escrito,direção. */
+const paraArestas = (ts: TransicaoDto[]): Aresta[] =>
+  ts.map(t => ({ de: t.estadoAtual, para: t.novoEstado, rotulo: `${t.simboloLido}/${t.simboloEscrito},${t.direcao}` }))
 
 export function Turing() {
   const [exemplos, setExemplos] = useState<MaquinaExemplo[]>([])
@@ -70,11 +74,11 @@ export function Turing() {
     }
   }
 
-  /** Apaga todas as regras e deixa uma linha em branco para começar de novo. */
+  /** Apaga todas as regras da tabela. */
   function limparTransicoes() {
     if (!window.confirm(`Apagar as ${transicoes.length} transições da tabela?`)) return
     setMaquinaId('personalizada')
-    setTransicoes([{ ...VAZIA }])
+    setTransicoes([])
     setRes(null)
   }
 
@@ -183,7 +187,7 @@ export function Turing() {
             {transicoes.length > 0 && (
               <div className="bloco">
                 <h3>Diagrama de estados</h3>
-                <DiagramaEstados transicoes={transicoes} estadoInicial={estadoInicial} estadosFinais={estadosFinais.split(',').map(s => s.trim())} />
+                <DiagramaEstados arestas={paraArestas(transicoes)} estadoInicial={estadoInicial} estadosFinais={estadosFinais.split(',').map(s => s.trim())} />
               </div>
             )}
           </>
@@ -229,6 +233,7 @@ function Execucao({ r, transicoes, inicial, finais }: { r: ResultadoTuring; tran
     },
   ], [r])
 
+  const arestas = useMemo(() => paraArestas(transicoes), [transicoes])
   const player = usePlayer(quadros.length, r)
   const q = quadros[player.atual]
   const tabelaRef = useRef<HTMLTableSectionElement>(null)
@@ -259,11 +264,11 @@ function Execucao({ r, transicoes, inicial, finais }: { r: ResultadoTuring; tran
         <div className="bloco">
           <h3>Diagrama de estados</h3>
           <DiagramaEstados
-            transicoes={transicoes}
+            arestas={arestas}
             estadoInicial={inicial}
             estadosFinais={finais}
-            estadoAtual={q.estado}
-            transicaoAtiva={q.de ? { de: q.de, para: q.para!, rotulo: q.rotuloAresta! } : undefined}
+            estadosAtuais={[q.estado]}
+            ativas={q.de ? [{ de: q.de, para: q.para!, rotulo: q.rotuloAresta }] : undefined}
           />
         </div>
         <div className="bloco">

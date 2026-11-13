@@ -1,20 +1,31 @@
 import { useMemo } from 'react'
-import type { TransicaoDto } from '../api'
+
+/** Uma seta do diagrama. Arestas com a mesma origem e destino são agrupadas. */
+export interface Aresta {
+  de: string
+  para: string
+  rotulo: string
+}
 
 interface Props {
-  transicoes: TransicaoDto[]
+  arestas: Aresta[]
   estadoInicial: string
   estadosFinais: string[]
-  estadoAtual?: string
-  transicaoAtiva?: { de: string; para: string; rotulo: string }
+  /** Estados que existem mesmo sem transições (opcional). */
+  estados?: string[]
+  /** Estado(s) em destaque: um só na MT/AFD; um conjunto no AFN. */
+  estadosAtuais?: string[]
+  /** Arestas em uso no passo atual; `rotulo` substitui o rótulo agrupado. */
+  ativas?: { de: string; para: string; rotulo?: string }[]
 }
 
 const R = 28
+const NENHUM: never[] = []
 
-/** Diagrama de estados em layout circular; destaca o estado atual e a transição em uso. */
-export function DiagramaEstados({ transicoes, estadoInicial, estadosFinais, estadoAtual, transicaoAtiva }: Props) {
+/** Diagrama de estados em layout circular; destaca o(s) estado(s) atual(is) e as transições em uso. */
+export function DiagramaEstados({ arestas: entrada, estadoInicial, estadosFinais, estados: declarados = NENHUM, estadosAtuais = NENHUM, ativas = NENHUM }: Props) {
   const { estados, arestas, tamanho } = useMemo(() => {
-    const nomes = [estadoInicial, ...transicoes.flatMap(t => [t.estadoAtual, t.novoEstado]), ...estadosFinais]
+    const nomes = [estadoInicial, ...declarados, ...entrada.flatMap(t => [t.de, t.para]), ...estadosFinais]
       .map(s => s.trim())
       .filter(Boolean)
     const unicos = [...new Set(nomes)]
@@ -27,14 +38,14 @@ export function DiagramaEstados({ transicoes, estadoInicial, estadosFinais, esta
     })
 
     const grupos = new Map<string, { de: string; para: string; rotulos: string[] }>()
-    for (const t of transicoes) {
-      const chave = `${t.estadoAtual}→${t.novoEstado}`
-      const g = grupos.get(chave) ?? { de: t.estadoAtual, para: t.novoEstado, rotulos: [] }
-      g.rotulos.push(`${t.simboloLido}/${t.simboloEscrito},${t.direcao}`)
+    for (const t of entrada) {
+      const chave = `${t.de}→${t.para}`
+      const g = grupos.get(chave) ?? { de: t.de, para: t.para, rotulos: [] }
+      if (!g.rotulos.includes(t.rotulo)) g.rotulos.push(t.rotulo)
       grupos.set(chave, g)
     }
     return { estados, arestas: [...grupos.values()], tamanho }
-  }, [transicoes, estadoInicial, estadosFinais])
+  }, [entrada, estadoInicial, estadosFinais, declarados])
 
   const pos = new Map(estados.map(e => [e.nome, e]))
   const centro = tamanho / 2
@@ -55,9 +66,11 @@ export function DiagramaEstados({ transicoes, estadoInicial, estadosFinais, esta
           const de = pos.get(a.de)
           const para = pos.get(a.para)
           if (!de || !para) return null
-          const ativa = transicaoAtiva?.de === a.de && transicaoAtiva?.para === a.para
+          const emUso = ativas.filter(t => t.de === a.de && t.para === a.para)
+          const ativa = emUso.length > 0
           const titulo = `${a.de} → ${a.para}: ${a.rotulos.join('  ')}`
-          const rotulo = ativa ? transicaoAtiva!.rotulo : a.rotulos.length > 2 ? `${a.rotulos.length} transições` : a.rotulos.join(' ')
+          const rotuloAtivo = emUso.find(t => t.rotulo)?.rotulo
+          const rotulo = rotuloAtivo ?? (a.rotulos.length > 2 ? `${a.rotulos.length} transições` : a.rotulos.join(' '))
 
           if (a.de === a.para) {
             // laço: aponta para fora do centro do círculo
@@ -99,7 +112,7 @@ export function DiagramaEstados({ transicoes, estadoInicial, estadosFinais, esta
         {estados.map(e => {
           const final = estadosFinais.includes(e.nome)
           const inicial = e.nome === estadoInicial
-          const atual = e.nome === estadoAtual
+          const atual = estadosAtuais.includes(e.nome)
           return (
             <g key={e.nome} className={`estado ${atual ? 'atual' : ''} ${final ? 'final' : ''}`}>
               <title>{`${e.nome}${inicial ? ' (inicial)' : ''}${final ? ' (final)' : ''}`}</title>

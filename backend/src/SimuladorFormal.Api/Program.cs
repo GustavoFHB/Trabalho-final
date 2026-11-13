@@ -1,5 +1,7 @@
 using System.Text.Json.Serialization;
 using SimuladorFormal.Api.Infra;
+using SimuladorFormal.AutomatosFinitos;
+using SimuladorFormal.AutomatosPilha;
 using SimuladorFormal.Gramaticas;
 using SimuladorFormal.Linguagens;
 using SimuladorFormal.Turing;
@@ -12,9 +14,11 @@ builder.Services
 
 // Cada módulo registra seus próprios serviços e controllers.
 builder.Services
-    .AddModuloLinguagens()   // Módulo 1
-    .AddModuloGramaticas()   // Módulo 3
-    .AddModuloTuring();      // Módulo 5
+    .AddModuloLinguagens()        // Módulo 1
+    .AddModuloAutomatosFinitos()  // Módulo 2
+    .AddModuloGramaticas()        // Módulo 3
+    .AddModuloAutomatosPilha()    // Módulo 4
+    .AddModuloTuring();           // Módulo 5
 
 // Em desenvolvimento o front (Vite, porta 5173) chama a API diretamente.
 builder.Services.AddCors(o => o.AddDefaultPolicy(p =>

@@ -16,6 +16,18 @@ n = |w|, m = |v|, s = |Σ|, k = tamanho máximo listado.
 | w ∈ L, L finita | Θ(n) | Θ(n) | Θ(n) | Validação + `HashSet<string>` (o hash da cadeia custa Θ(n)). |
 | w ∈ L, L regular | Ω(n) | O(n) | O(2ⁿ) | O motor `Regex` do .NET usa backtracking: linear nos casos comuns, exponencial em padrões patológicos (ex.: `(a*)*b`). Há timeout de 1 s. Um AFD equivalente seria Θ(n). |
 
+## Módulo 2 — Autômato finito
+
+n = |w|, |Q| = número de estados, |δ| = número de transições, |δλ| = transições λ.
+
+| Algoritmo | Melhor | Médio | Pior | Justificativa |
+|---|---|---|---|---|
+| Montar o autômato do JSON (`LeitorAutomato`, construtor de `AutomatoFinito`) | Θ(\|Q\|+\|δ\|) | Θ(\|Q\|+\|δ\|) | Θ(\|Q\|+\|δ\|) | Cada transição entra em `Dictionary<(estado, símbolo?), List<destino>>`; Q, Σ e F ficam em `HashSet`. |
+| Executar um AFD | Θ(1) | Θ(n) | Θ(n) | Uma consulta O(1) a δ por símbolo. Melhor caso: não existe δ(q0, w₁) e o autômato trava no primeiro símbolo. |
+| Executar um AFN (método dos subconjuntos, `AutomatoFinito.Executar`) | Θ(1) | O(n·(\|Q\|+\|δ\|)) | O(n·(\|Q\|+\|δ\|)) | O conjunto ativo tem no máximo \|Q\| estados e, em cada símbolo, cada transição é usada no máximo uma vez, mais o fecho-λ. Simular sobre conjuntos evita construir o AFD equivalente, que pode ter 2^\|Q\| estados. |
+| Fecho-λ (`FechoLambda`) | Θ(1) | O(\|Q\|+\|δλ\|) | O(\|Q\|+\|δλ\|) | BFS só pelas transições λ; cada estado entra no conjunto uma única vez. Θ(1) em autômatos sem λ (retorno imediato). |
+| Reconstruir o caminho q0 → … → qf | Θ(n) | Θ(n+k) | Θ(n+k) | Cada estado de cada nível guarda seu predecessor; seguir os ponteiros custa um passo por símbolo lido mais k transições λ. |
+
 ## Módulo 3 — Gramática livre de contexto
 
 n = |w|, |G| = soma dos tamanhos dos lados direitos, |V| = número de variáveis.
@@ -28,6 +40,20 @@ n = |w|, |G| = soma dos tamanhos dos lados direitos, |V| = número de variáveis
 | Derivação mais à esquerda | Θ(p·f) | Θ(p·f) | Θ(p·f) | p passos (= número de nós internos); em cada um procura a variável mais à esquerda numa forma sentencial de tamanho f = O(n + p). |
 
 **Por que Earley e não busca de derivações?** Gerar derivações por força bruta é exponencial e não termina em gramáticas recursivas à esquerda. CYK exigiria converter a gramática para a Forma Normal de Chomsky, o que mudaria a árvore mostrada ao aluno. Earley trabalha com a gramática original, aceita qualquer GLC e tem pior caso polinomial.
+
+## Módulo 4 — Autômato com pilha
+
+n = |w|, t = movimentos do caminho exibido, h = altura da pilha, c = configurações (estado, posição, pilha) exploradas.
+
+| Algoritmo | Melhor | Médio | Pior | Justificativa |
+|---|---|---|---|---|
+| Empilhar / desempilhar (`Pilha`) | Θ(1) | O(h) | O(h) | A pilha é imutável (cada ramo não determinístico tem a sua), então cada operação cria uma nova cadeia de tamanho h. |
+| aⁿbⁿ (determinístico) | Θ(1) | Θ(n) | Θ(n) | Exatamente n+1 movimentos numa cadeia aceita (um por símbolo e um λ no fim). Melhor caso: começa com b e trava. Contando a cópia da pilha, o simulador custa Θ(n²). |
+| AP não determinístico (BFS em `AutomatoPilha.Executar`) | Θ(n) | O(c·h) | exponencial | A busca em largura visita cada configuração uma vez (`HashSet` de configurações). Em wwᴿ, c = O(n²) (n pontos possíveis para o "meio"). Em geral c pode crescer exponencialmente e laços λ podem empilhar sem fim, por isso há limite de configurações (padrão 10 000) e de altura (500). |
+| Detectar determinismo | Θ(\|δ\|) | O(\|δ\|²) | O(\|δ\|²) | Compara as transições de cada estado duas a duas. |
+| Reconstruir os passos | Θ(t·h) | Θ(t·h) | Θ(t·h) | Segue os ponteiros para o nó pai; cada passo guarda a pilha antes e depois. |
+
+Um AP determinístico reconhece aⁿbⁿ em tempo linear. Para uma GLC qualquer, simular diretamente o AP não determinístico equivalente pode ser exponencial, enquanto Earley é O(n³) — por isso o Módulo 3 usa Earley.
 
 ## Módulo 5 — Máquina de Turing
 
