@@ -1,11 +1,13 @@
 # Simulador de Linguagens Formais e Modelos Computacionais
 
-Projeto prático de **Aspectos Teóricos da Computação** (AV3). Implementa três módulos do enunciado em **C# (.NET 8)**, com interface web em **React** (ponto extra):
+Projeto prático de **Aspectos Teóricos da Computação** (AV3). Implementa os seis módulos do enunciado em **C# (.NET 8)**, com interface web em **React** (ponto extra):
 
 | Módulo | O que faz |
 |---|---|
 | **1. Linguagens formais** | Define Σ e L (conjunto finito ou expressão regular), valida w ∈ Σ*, calcula \|w\|, w·v, wᴿ e enumera Σ* e Σ+ até um tamanho k. |
+| **2. Autômatos finitos** | Importa AFD ou AFN por JSON, executa cadeias e mostra estados e transições, incluindo fecho λ no AFN. |
 | **3. Gramática livre de contexto** | Define V, T, P e S; reconhece a cadeia com o algoritmo de **Earley**, mostra a **derivação mais à esquerda passo a passo** e a **árvore de derivação**. |
+| **4. Autômato com pilha** | Decide aⁿbⁿ para n ≥ 1, exibindo símbolo, estado e pilha a cada passo. |
 | **5. Máquina de Turing** | **Opção A** (reconhece w#w) **e opção B** (soma unária), além de máquinas personalizadas. Fita, cabeçote, diagrama de estados e histórico animados. |
 | **6. Complexidade** | Aba com a análise O / Ω / Θ (melhor, médio e pior caso) de cada algoritmo — detalhes em [docs/COMPLEXIDADE.md](docs/COMPLEXIDADE.md). |
 
@@ -37,13 +39,14 @@ backend/
 │       │   ├── Earley/                       # ItemEarley, ConjuntoEarley, ReconhecedorEarley…
 │       │   ├── Derivacao/                    # NoArvore, ConstrutorArvore, GeradorDerivacaoEsquerda…
 │       │   ├── Contratos/  Servicos/  Api/
+│       ├── SimuladorFormal.Automatos/       # Módulos 2 e 4
 │       └── SimuladorFormal.Turing/           # Módulo 5
 │           ├── Dominio/                      # Fita, Transicao, Direcao, FuncaoTransicao, MaquinaTuring
 │           ├── Execucao/                     # Passo, ResultadoSimulacao
 │           ├── Leitura/                      # LeitorTransicao
 │           ├── Exemplos/                     # MaquinaSomaUnaria, MaquinaWCercaW, CatalogoMaquinas
 │           ├── Contratos/  Servicos/  Api/
-└── tests/SimuladorFormal.Tests/              # xUnit (36 testes), uma pasta por módulo
+└── tests/SimuladorFormal.Tests/              # xUnit, uma pasta por módulo
 frontend/                                     # React + Vite + TypeScript
 └── src/
     ├── modulos/                       # uma tela por módulo
@@ -108,6 +111,16 @@ curl -X POST http://localhost:5080/api/linguagens/analisar \
   -H "Content-Type: application/json" -d @exemplos/linguagem.json
 ```
 
+### Módulo 2 — AFD e AFN
+
+Na aba **AFD / AFN**, importe `exemplos/afd-ab.json`. A cadeia `ab` produz
+`q0 → q1 → q2` e aceita. `aba` rejeita. AFDs podem ter transições omitidas:
+isso equivale a um estado poço implícito. O exemplo `afn-termina-a.json`
+aceita `baa`; o passo inicial inclui q0 e q1 por causa da transição λ.
+
+Pela API, envie `{"automato": {...}, "cadeia": "ab"}`, onde o objeto
+`automato` é o conteúdo do arquivo importado.
+
 ### Módulo 3 — Gramática (exemplo do enunciado)
 
 Entrada: `S -> aSb | λ`, cadeia `aaabbb`
@@ -132,6 +145,17 @@ Cadeias como `aab` ou `abab` são rejeitadas com o ponto em que a análise falho
 ```bash
 curl -X POST http://localhost:5080/api/gramaticas/derivar \
   -H "Content-Type: application/json" -d @exemplos/gramatica-anbn.json
+```
+
+### Módulo 4 — Autômato com pilha
+
+Na aba **Autômato com pilha**, `aaabbb` empilha A três vezes, desempilha
+três vezes e aceita em qf. `aab`, `abab` e λ são rejeitadas.
+A resposta inclui o símbolo lido, o estado, a ação e a pilha do topo ao fundo.
+
+```bash
+curl -X POST http://localhost:5080/api/automatos/pilha \
+  -H "Content-Type: application/json" -d @exemplos/pilha-anbn.json
 ```
 
 ### Módulo 5 — Máquina de Turing
@@ -159,6 +183,8 @@ curl -X POST http://localhost:5080/api/turing/simular \
 | Método | Rota | Descrição |
 |---|---|---|
 | POST | `/api/linguagens/analisar` | Validação, tamanho, concatenação, Σ*, Σ+ e pertinência em L |
+| POST | `/api/automatos/finito` | Simula AFD/AFN e lista estados ativos por posição |
+| POST | `/api/automatos/pilha` | Decide aⁿbⁿ e lista operações e configurações da pilha |
 | POST | `/api/gramaticas/derivar` | Reconhecimento, derivação passo a passo e árvore |
 | GET | `/api/turing/exemplos` | Máquinas prontas (soma unária e w#w) |
 | POST | `/api/turing/simular` | Executa uma máquina e devolve todos os passos |

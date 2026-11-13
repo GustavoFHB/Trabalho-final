@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useId, useMemo } from 'react'
 import type { TransicaoDto } from '../api'
 
 interface Props {
@@ -6,15 +6,19 @@ interface Props {
   estadoInicial: string
   estadosFinais: string[]
   estadoAtual?: string
+  estados?: string[]
+  estadosAtivos?: string[]
+  somenteLeitura?: boolean
   transicaoAtiva?: { de: string; para: string; rotulo: string }
 }
 
 const R = 28
 
 /** Diagrama de estados em layout circular; destaca o estado atual e a transição em uso. */
-export function DiagramaEstados({ transicoes, estadoInicial, estadosFinais, estadoAtual, transicaoAtiva }: Props) {
+export function DiagramaEstados({ transicoes, estadoInicial, estadosFinais, estadoAtual, transicaoAtiva, estados: estadosDeclarados, estadosAtivos, somenteLeitura }: Props) {
+  const marcador = useId()
   const { estados, arestas, tamanho } = useMemo(() => {
-    const nomes = [estadoInicial, ...transicoes.flatMap(t => [t.estadoAtual, t.novoEstado]), ...estadosFinais]
+    const nomes = [estadoInicial, ...(estadosDeclarados ?? []), ...transicoes.flatMap(t => [t.estadoAtual, t.novoEstado]), ...estadosFinais]
       .map(s => s.trim())
       .filter(Boolean)
     const unicos = [...new Set(nomes)]
@@ -30,11 +34,11 @@ export function DiagramaEstados({ transicoes, estadoInicial, estadosFinais, esta
     for (const t of transicoes) {
       const chave = `${t.estadoAtual}→${t.novoEstado}`
       const g = grupos.get(chave) ?? { de: t.estadoAtual, para: t.novoEstado, rotulos: [] }
-      g.rotulos.push(`${t.simboloLido}/${t.simboloEscrito},${t.direcao}`)
+      g.rotulos.push(somenteLeitura ? t.simboloLido : `${t.simboloLido}/${t.simboloEscrito},${t.direcao}`)
       grupos.set(chave, g)
     }
     return { estados, arestas: [...grupos.values()], tamanho }
-  }, [transicoes, estadoInicial, estadosFinais])
+  }, [transicoes, estadoInicial, estadosFinais, estadosDeclarados, somenteLeitura])
 
   const pos = new Map(estados.map(e => [e.nome, e]))
   const centro = tamanho / 2
@@ -43,10 +47,10 @@ export function DiagramaEstados({ transicoes, estadoInicial, estadosFinais, esta
     <div className="diagrama-wrap">
       <svg viewBox={`0 0 ${tamanho} ${tamanho}`} width={tamanho} height={tamanho} role="img" aria-label="Diagrama de estados">
         <defs>
-          <marker id="ponta" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <marker id={marcador} viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
             <path d="M0,0 L10,5 L0,10 z" className="ponta" />
           </marker>
-          <marker id="ponta-ativa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <marker id={`${marcador}-ativa`} viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
             <path d="M0,0 L10,5 L0,10 z" className="ponta-ativa" />
           </marker>
         </defs>
@@ -72,7 +76,7 @@ export function DiagramaEstados({ transicoes, estadoInicial, estadosFinais, esta
             return (
               <g key={`${a.de}-${a.para}`} className={`aresta ${ativa ? 'ativa' : ''}`}>
                 <title>{titulo}</title>
-                <path d={d} markerEnd={`url(#${ativa ? 'ponta-ativa' : 'ponta'})`} />
+                <path d={d} markerEnd={`url(#${marcador}${ativa ? '-ativa' : ''})`} />
                 <text x={lx} y={ly} dy="0.35em" textAnchor="middle">{rotulo}</text>
               </g>
             )
@@ -90,7 +94,7 @@ export function DiagramaEstados({ transicoes, estadoInicial, estadosFinais, esta
           return (
             <g key={`${a.de}-${a.para}`} className={`aresta ${ativa ? 'ativa' : ''}`}>
               <title>{titulo}</title>
-              <path d={`M${s.x},${s.y} Q${m.x},${m.y} ${e.x},${e.y}`} markerEnd={`url(#${ativa ? 'ponta-ativa' : 'ponta'})`} />
+              <path d={`M${s.x},${s.y} Q${m.x},${m.y} ${e.x},${e.y}`} markerEnd={`url(#${marcador}${ativa ? '-ativa' : ''})`} />
               <text x={m.x + nx * 8} y={m.y + ny * 8} dy="0.35em" textAnchor="middle">{rotulo}</text>
             </g>
           )
@@ -99,12 +103,12 @@ export function DiagramaEstados({ transicoes, estadoInicial, estadosFinais, esta
         {estados.map(e => {
           const final = estadosFinais.includes(e.nome)
           const inicial = e.nome === estadoInicial
-          const atual = e.nome === estadoAtual
+          const atual = e.nome === estadoAtual || estadosAtivos?.includes(e.nome)
           return (
             <g key={e.nome} className={`estado ${atual ? 'atual' : ''} ${final ? 'final' : ''}`}>
               <title>{`${e.nome}${inicial ? ' (inicial)' : ''}${final ? ' (final)' : ''}`}</title>
               {inicial && (
-                <path d={`M${e.x - R - 22},${e.y} L${e.x - R - 2},${e.y}`} className="seta-inicial" markerEnd="url(#ponta)" />
+                <path d={`M${e.x - R - 22},${e.y} L${e.x - R - 2},${e.y}`} className="seta-inicial" markerEnd={`url(#${marcador})`} />
               )}
               <circle cx={e.x} cy={e.y} r={R} />
               {final && <circle cx={e.x} cy={e.y} r={R - 4} className="anel" />}

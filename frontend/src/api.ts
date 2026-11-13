@@ -168,3 +168,21 @@ export const simularTuring = (req: {
   limitePassos: number
   transicoes: TransicaoDto[]
 }) => post<ResultadoTuring>('/api/turing/simular', req)
+
+// ---------- Módulos 2 e 4 ----------
+export interface RegraAF { origem: string; simbolo: string; destino: string }
+export interface DefinicaoAF {
+  tipo: 'AFD' | 'AFN'
+  estados: string[]
+  alfabeto: string[]
+  estadoInicial: string
+  estadosFinais: string[]
+  transicoes: RegraAF[]
+}
+export interface PassoAF { posicao: number; simbolo: string | null; estadosAtivos: string[]; transicoes: RegraAF[] }
+export interface PassoAP { posicao: number; simbolo: string | null; estado: string; acao: string; pilha: string }
+interface ResultadoAutomato<T> { aceita: boolean; mensagem: string; passos: T[] }
+export const simularFinito = (automato: DefinicaoAF, cadeia: string) =>
+  post<ResultadoAutomato<PassoAF>>('/api/automatos/finito', { automato, cadeia })
+export const simularPilha = (cadeia: string) =>
+  post<ResultadoAutomato<PassoAP>>('/api/automatos/pilha', { cadeia })

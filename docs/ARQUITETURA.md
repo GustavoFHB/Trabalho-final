@@ -293,3 +293,27 @@ flowchart LR
 | `ItemEarley` | ponteiros para o item anterior e para o filho | Permite reconstruir a árvore sem nova busca. |
 | `Fita` | `List<char>` que cresce nas duas pontas | Simula a fita infinita. |
 | `FuncaoTransicao` | `Dictionary<(string, char), Transicao>` | δ em O(1) e detecção de não determinismo na construção. |
+
+### Módulos 2 e 4 — Autômatos
+
+`AutomatosController` recebe o JSON e delega a `AutomatoFinito` ou
+`AutomatoPilha`. Ambos devolvem veredito e configurações para o React.
+O AF indexa as regras por (origem, símbolo). O AFD avança um estado por vez;
+o AFN guarda um conjunto de estados ativos e aplica fecho λ com fila e
+conjunto de visitados, evitando repetir ciclos. O AP usa `Stack<char>` e
+registra a ação e o conteúdo da pilha depois de cada símbolo.
+
+```mermaid
+classDiagram
+    AutomatosController --> AutomatoFinito
+    AutomatosController --> AutomatoPilha
+    AutomatoFinito --> DefinicaoAF
+    AutomatoFinito --> ResultadoAF
+    AutomatoPilha --> ResultadoAP
+    ResultadoAF *-- PassoAF
+    ResultadoAP *-- PassoAP
+```
+
+Caso de uso AF: importar configuração, informar cadeia, executar e
+percorrer estados ativos. Caso de uso AP: informar cadeia, executar e
+percorrer operações e configurações da pilha.

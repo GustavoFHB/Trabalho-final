@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using SimuladorFormal.Api.Infra;
+using SimuladorFormal.Automatos;
 using SimuladorFormal.Gramaticas;
 using SimuladorFormal.Linguagens;
 using SimuladorFormal.Turing;
@@ -13,6 +14,7 @@ builder.Services
 // Cada módulo registra seus próprios serviços e controllers.
 builder.Services
     .AddModuloLinguagens()   // Módulo 1
+    .AddModuloAutomatos()    // Módulos 2 e 4
     .AddModuloGramaticas()   // Módulo 3
     .AddModuloTuring();      // Módulo 5
 
